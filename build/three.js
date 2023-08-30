@@ -1514,6 +1514,40 @@ console.warn( 'Scripts "build/three.js" and "build/three.min.js" are deprecated 
 
 	}
 
+	function parseImageMIMEType(extension) {
+		let type = null;
+
+		switch ( extension ) {
+
+			case 'bmp':
+
+				type = 'image/bmp';
+				break;
+
+			case 'jpg':
+			case 'jpeg':
+
+				type = 'image/jpeg';
+				break;
+
+			case 'png':
+
+				type = 'image/png';
+				break;
+
+			case 'tif':
+
+				type = 'image/tiff';
+				break;
+
+			case 'tga':
+				type = 'image/tga';
+				break;
+		}
+
+		return type;
+	}
+
 	const TYPED_ARRAYS = {
 		Int8Array: Int8Array,
 		Uint8Array: Uint8Array,
@@ -1748,6 +1782,10 @@ console.warn( 'Scripts "build/three.js" and "build/three.min.js" are deprecated 
 
 			}
 
+		}
+
+		static parseImageMIMEType(extension) {
+			return parseImageMIMEType(extension);
 		}
 
 		static sRGBToLinear( image ) {
@@ -41795,7 +41833,7 @@ console.warn( 'Scripts "build/three.js" and "build/three.min.js" are deprecated 
 			this.path = '';
 			this.resourcePath = '';
 			this.requestHeader = {};
-
+			this.useCredentialsForResources = false;
 		}
 
 		load( /* url, onLoad, onProgress, onError */ ) {}
@@ -41826,6 +41864,13 @@ console.warn( 'Scripts "build/three.js" and "build/three.min.js" are deprecated 
 			this.withCredentials = value;
 			return this;
 
+		}
+
+		setUseCredentialsForResources(value) {
+
+			this.useCredentialsForResources = value;
+			return this;
+			
 		}
 
 		setPath( path ) {
@@ -42328,78 +42373,99 @@ console.warn( 'Scripts "build/three.js" and "build/three.min.js" are deprecated 
 		}
 
 		load( url, onLoad, onProgress, onError ) {
+			const originalUrl = url;
 
 			if ( this.path !== undefined ) url = this.path + url;
-
+			
 			url = this.manager.resolveURL( url );
-
+			
 			const scope = this;
 
-			const cached = Cache.get( url );
+			function handleImage(fileUrl, fileLoader = false) {
+				const image = createElementNS( 'img' );
 
-			if ( cached !== undefined ) {
+				function onImageLoad() {
 
-				scope.manager.itemStart( url );
+					removeEventListeners();
 
-				setTimeout( function () {
+					if(!fileLoader) {
+						Cache.add( fileUrl, this );
+					}
 
-					if ( onLoad ) onLoad( cached );
+					if ( onLoad ) onLoad( this );
 
-					scope.manager.itemEnd( url );
+					if(!fileLoader) {
+						scope.manager.itemEnd( fileUrl );
+					}
+				}
 
-				}, 0 );
+				function onImageError( event ) {
 
-				return cached;
+					removeEventListeners();
 
+					if ( onError ) onError( event );
+
+					if(!fileLoader) {
+						scope.manager.itemError( fileUrl );
+						scope.manager.itemEnd( fileUrl );
+					}
+				}
+
+				function removeEventListeners() {
+
+					image.removeEventListener( 'load', onImageLoad, false );
+					image.removeEventListener( 'error', onImageError, false );
+
+				}
+
+				image.addEventListener( 'load', onImageLoad, false );
+				image.addEventListener( 'error', onImageError, false );
+
+				if (fileUrl.slice( 0, 5 ) !== 'data:' ) {
+					if ( scope.crossOrigin !== undefined ) image.crossOrigin = scope.crossOrigin;
+				}
+
+				if(!fileLoader) scope.manager.itemStart( fileUrl );
+
+				image.src = fileUrl;
+
+				return image;
 			}
 
-			const image = createElementNS( 'img' );
+			if(this.withCredentials) {
+				const loader = new FileLoader( this.manager );
+				loader.setCrossOrigin( this.crossOrigin );
+				loader.setResponseType( 'arraybuffer' );
+				loader.setPath( this.path );
+				loader.setWithCredentials( this.withCredentials );
+				loader.setRequestHeader( this.requestHeader );
+				
+				const fileExtension = url.split('.').pop().toLowerCase();
+				loader.load(originalUrl, ( buffer ) => {
+					var blob = new Blob([buffer], { type: parseImageMIMEType(fileExtension)});
+					var blobUrl = URL.createObjectURL(blob);
+					handleImage(blobUrl, true);
+				}, onProgress, onError );
+			} else {
+				const cached = Cache.get( url );
 
-			function onImageLoad() {
+				if ( cached !== undefined ) {
 
-				removeEventListeners();
+					scope.manager.itemStart( url );
 
-				Cache.add( url, this );
+					setTimeout( function () {
 
-				if ( onLoad ) onLoad( this );
+						if ( onLoad ) onLoad( cached );
 
-				scope.manager.itemEnd( url );
+						scope.manager.itemEnd( url );
 
+					}, 0 );
+
+					return cached;
+				}
+
+				handleImage(url);
 			}
-
-			function onImageError( event ) {
-
-				removeEventListeners();
-
-				if ( onError ) onError( event );
-
-				scope.manager.itemError( url );
-				scope.manager.itemEnd( url );
-
-			}
-
-			function removeEventListeners() {
-
-				image.removeEventListener( 'load', onImageLoad, false );
-				image.removeEventListener( 'error', onImageError, false );
-
-			}
-
-			image.addEventListener( 'load', onImageLoad, false );
-			image.addEventListener( 'error', onImageError, false );
-
-			if ( url.slice( 0, 5 ) !== 'data:' ) {
-
-				if ( this.crossOrigin !== undefined ) image.crossOrigin = this.crossOrigin;
-
-			}
-
-			scope.manager.itemStart( url );
-
-			image.src = url;
-
-			return image;
-
 		}
 
 	}
@@ -42598,6 +42664,8 @@ console.warn( 'Scripts "build/three.js" and "build/three.min.js" are deprecated 
 			const loader = new ImageLoader( this.manager );
 			loader.setCrossOrigin( this.crossOrigin );
 			loader.setPath( this.path );
+			loader.setWithCredentials( this.withCredentials );
+			loader.setRequestHeader( this.requestHeader );
 
 			loader.load( url, function ( image ) {
 
