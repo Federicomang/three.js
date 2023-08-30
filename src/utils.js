@@ -44,6 +44,40 @@ function arrayNeedsUint32( array ) {
 
 }
 
+function parseImageMIMEType(extension) {
+	let type = null;
+
+	switch ( extension ) {
+
+		case 'bmp':
+
+			type = 'image/bmp';
+			break;
+
+		case 'jpg':
+		case 'jpeg':
+
+			type = 'image/jpeg';
+			break;
+
+		case 'png':
+
+			type = 'image/png';
+			break;
+
+		case 'tif':
+
+			type = 'image/tiff';
+			break;
+
+		case 'tga':
+			type = 'image/tga';
+			break;
+	}
+
+	return type;
+}
+
 const TYPED_ARRAYS = {
 	Int8Array: Int8Array,
 	Uint8Array: Uint8Array,
@@ -88,4 +122,4 @@ function warnOnce( message ) {
 
 }
 
-export { arrayMin, arrayMax, arrayNeedsUint32, getTypedArray, createElementNS, createCanvasElement, warnOnce };
+export { arrayMin, arrayMax, arrayNeedsUint32, getTypedArray, createElementNS, createCanvasElement, warnOnce, parseImageMIMEType };

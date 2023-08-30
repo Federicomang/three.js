@@ -11,7 +11,7 @@ class Loader {
 		this.path = '';
 		this.resourcePath = '';
 		this.requestHeader = {};
-
+		this.useCredentialsForResources = false;
 	}
 
 	load( /* url, onLoad, onProgress, onError */ ) {}
@@ -42,6 +42,13 @@ class Loader {
 		this.withCredentials = value;
 		return this;
 
+	}
+
+	setUseCredentialsForResources(value) {
+
+		this.useCredentialsForResources = value;
+		return this;
+		
 	}
 
 	setPath( path ) {

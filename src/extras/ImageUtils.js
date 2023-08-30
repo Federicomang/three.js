@@ -1,4 +1,4 @@
-import { createElementNS } from '../utils.js';
+import { createElementNS, parseImageMIMEType as utilParseImageMIMEType } from '../utils.js';
 import { SRGBToLinear } from '../math/ColorManagement.js';
 
 let _canvas;
@@ -60,6 +60,10 @@ class ImageUtils {
 
 		}
 
+	}
+
+	static parseImageMIMEType(extension) {
+		return utilParseImageMIMEType(extension);
 	}
 
 	static sRGBToLinear( image ) {

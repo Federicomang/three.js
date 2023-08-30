@@ -11,6 +11,7 @@ import {
 	FileLoader,
 	Float32BufferAttribute,
 	Group,
+	ImageUtils,
 	Line,
 	LineBasicMaterial,
 	Loader,
@@ -139,6 +140,10 @@ class FBXLoader extends Loader {
 		// console.log( fbxTree );
 
 		const textureLoader = new TextureLoader( this.manager ).setPath( this.resourcePath || path ).setCrossOrigin( this.crossOrigin );
+
+		if(this.useCredentialsForResources) {
+			textureLoader.setWithCredentials(this.withCredentials).setRequestHeader(this.requestHeader);
+		}
 
 		return new FBXTreeParser( textureLoader, this.manager ).parse( fbxTree );
 
@@ -280,47 +285,17 @@ class FBXTreeParser {
 		const fileName = videoNode.RelativeFilename || videoNode.Filename;
 		const extension = fileName.slice( fileName.lastIndexOf( '.' ) + 1 ).toLowerCase();
 
-		let type;
+		let type = ImageUtils.parseImageMIMEType(extension);
 
-		switch ( extension ) {
-
-			case 'bmp':
-
-				type = 'image/bmp';
-				break;
-
-			case 'jpg':
-			case 'jpeg':
-
-				type = 'image/jpeg';
-				break;
-
-			case 'png':
-
-				type = 'image/png';
-				break;
-
-			case 'tif':
-
-				type = 'image/tiff';
-				break;
-
-			case 'tga':
-
+		switch(type) {
+			case "image/tga":
 				if ( this.manager.getHandler( '.tga' ) === null ) {
 
 					console.warn( 'FBXLoader: TGA loader not found, skipping ', fileName );
-
 				}
-
-				type = 'image/tga';
-				break;
-
-			default:
-
+			case null:
 				console.warn( 'FBXLoader: Image type "' + extension + '" is not supported.' );
 				return;
-
 		}
 
 		if ( typeof content === 'string' ) { // ASCII format

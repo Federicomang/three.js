@@ -17,6 +17,8 @@ class TextureLoader extends Loader {
 		const loader = new ImageLoader( this.manager );
 		loader.setCrossOrigin( this.crossOrigin );
 		loader.setPath( this.path );
+		loader.setWithCredentials( this.withCredentials );
+		loader.setRequestHeader( this.requestHeader );
 
 		loader.load( url, function ( image ) {
 
