@@ -144,6 +144,10 @@ class MTLLoader extends Loader {
 
 		const materialCreator = new MaterialCreator( this.resourcePath || path, this.materialOptions );
 		materialCreator.setCrossOrigin( this.crossOrigin );
+		if ( this.useCredentialsForResources ) {
+			materialCreator.setRequestHeader( this.requestHeader );
+			materialCreator.setWithCredentials( this.withCredentials );
+		}
 		materialCreator.setManager( this.manager );
 		materialCreator.setMaterials( materialsInfo );
 		return materialCreator;
@@ -179,6 +183,8 @@ class MaterialCreator {
 		this.nameLookup = {};
 
 		this.crossOrigin = 'anonymous';
+		this.requestHeader = {};
+		this.withCredentials = false;
 
 		this.side = ( this.options.side !== undefined ) ? this.options.side : FrontSide;
 		this.wrap = ( this.options.wrap !== undefined ) ? this.options.wrap : RepeatWrapping;
@@ -190,6 +196,20 @@ class MaterialCreator {
 		this.crossOrigin = value;
 		return this;
 
+	}
+
+	setRequestHeader( header ) {
+
+		this.requestHeader = header;
+		return this;
+
+	}
+
+	setWithCredentials( value ) {
+
+		this.withCredentials = value;
+		return this;
+		
 	}
 
 	setManager( value ) {
@@ -553,6 +573,8 @@ class MaterialCreator {
 		}
 
 		if ( loader.setCrossOrigin ) loader.setCrossOrigin( this.crossOrigin );
+		if ( loader.setRequestHeader ) loader.setRequestHeader( this.requestHeader );
+		if ( loader.setWithCredentials ) loader.setWithCredentials( this.withCredentials );
 
 		const texture = loader.load( url, onLoad, onProgress, onError );
 

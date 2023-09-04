@@ -420,6 +420,10 @@ class ObjectLoader extends Loader {
 
 			loader = new ImageLoader( manager );
 			loader.setCrossOrigin( this.crossOrigin );
+			if(this.useCredentialsForResources) {
+				loader.setWithCredentials(this.withCredentials);
+				loader.setRequestHeader(this.requestHeader);
+			}
 
 			for ( let i = 0, il = json.length; i < il; i ++ ) {
 
@@ -517,6 +521,10 @@ class ObjectLoader extends Loader {
 
 			loader = new ImageLoader( this.manager );
 			loader.setCrossOrigin( this.crossOrigin );
+			if(this.useCredentialsForResources) {
+				loader.setWithCredentials(this.withCredentials);
+				loader.setRequestHeader(this.requestHeader);
+			}
 
 			for ( let i = 0, il = json.length; i < il; i ++ ) {
 

@@ -352,8 +352,9 @@ class GLTFLoader extends Loader {
 			requestHeader: this.requestHeader,
 			manager: this.manager,
 			ktx2Loader: this.ktx2Loader,
-			meshoptDecoder: this.meshoptDecoder
-
+			meshoptDecoder: this.meshoptDecoder,
+			withCredentials: this.withCredentials,
+			useCredentialsForResources: this.useCredentialsForResources
 		} );
 
 		parser.fileLoader.setRequestHeader( this.requestHeader );
@@ -2476,12 +2477,15 @@ class GLTFParser {
 		this.fileLoader = new FileLoader( this.options.manager );
 		this.fileLoader.setResponseType( 'arraybuffer' );
 
-		if ( this.options.crossOrigin === 'use-credentials' ) {
+		if (this.options.crossOrigin === 'use-credentials' || this.options.withCredentials) {
 
-			this.fileLoader.setWithCredentials( true );
-
+			this.fileLoader.setWithCredentials(true);
 		}
 
+		if(this.useCredentialsForResources) {
+			
+			this.textureLoader.setWithCredentials(true);
+		}
 	}
 
 	setExtensions( extensions ) {
