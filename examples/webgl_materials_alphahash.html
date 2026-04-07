@@ -7,10 +7,6 @@
 		<link type="text/css" rel="stylesheet" href="main.css">
 	</head>
 	<body>
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -53,7 +49,6 @@
 			};
 
 			init();
-			animate();
 
 			function init() {
 
@@ -104,14 +99,15 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				document.body.appendChild( renderer.domElement );
 
 				//
 
-				const environment = new RoomEnvironment( renderer );
+				const environment = new RoomEnvironment();
 				const pmremGenerator = new THREE.PMREMGenerator( renderer );
 
-				scene.environment = pmremGenerator.fromScene( environment ).texture;
+				scene.environment = pmremGenerator.fromScene( environment, 0.04 ).texture;
 				environment.dispose();
 
 				//
@@ -193,8 +189,6 @@
 			}
 
 			function animate() {
-
-				requestAnimationFrame( animate );
 
 				render();
 

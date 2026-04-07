@@ -538,7 +538,7 @@ return geometry;
 			ui: {
 				text: { type: 'text', maxLength: 30, },
 				size: { type: 'range', min: 1, max: 10, precision: 1, },
-				height: { type: 'range', min: 1, max: 10, precision: 1, },
+				depth: { type: 'range', min: 1, max: 10, precision: 1, },
 				curveSegments: { type: 'range', min: 1, max: 20, },
 				// font', fonts ).onChange( generateGeometry );
 				// weight', weights ).onChange( generateGeometry );
@@ -548,7 +548,7 @@ return geometry;
 				bevelSegments: { type: 'range', min: 0, max: 8, },
 			},
 			addConstCode: false,
-			create( text = 'three.js', size = 3, height = 0.2, curveSegments = 12, bevelEnabled = true, bevelThickness = 0.15, bevelSize = 0.3, bevelSegments = 5 ) {
+			create( text = 'three.js', size = 3, depth = 0.2, curveSegments = 12, bevelEnabled = true, bevelThickness = 0.15, bevelSize = 0.3, bevelSegments = 5 ) {
 
 				return new Promise( ( resolve ) => {
 
@@ -557,7 +557,7 @@ return geometry;
 						resolve( new TextGeometry( text, {
 							font: font,
 							size,
-							height,
+							depth,
 							curveSegments,
 							bevelEnabled,
 							bevelThickness,
@@ -578,7 +578,7 @@ loader.load('../resources/threejs/fonts/helvetiker_regular.typeface.json', (font
   const geometry = new THREE.TextGeometry(text, {
     font: font,
     size: 3,  // ui: size
-    height: 0.2,  // ui: height
+    depth: 0.2,  // ui: depth
     curveSegments: 12,  // ui: curveSegments
     bevelEnabled: true,  // ui: bevelEnabled
     bevelThickness: 0.15,  // ui: bevelThickness
@@ -830,7 +830,7 @@ const geometry = new THREE.WireframeGeometry(
 
 		const a = document.createElement( 'a' );
 		a.setAttribute( 'target', '_blank' );
-		a.href = href || `https://threejs.org/docs/#api/geometries/${name}`;
+		a.href = href || `https://threejs.org/docs/#api/en/geometries/${name}`;
 		const code = document.createElement( 'code' );
 		code.textContent = name;
 		a.appendChild( code );
@@ -842,7 +842,7 @@ const geometry = new THREE.WireframeGeometry(
 	function addDeepLink( parent, name, href ) {
 
 		const a = document.createElement( 'a' );
-		a.href = href || `https://threejs.org/docs/#api/geometries/${name}`;
+		a.href = href || `https://threejs.org/docs/#api/en/geometries/${name}`;
 		a.textContent = name;
 		a.className = 'deep-link';
 		parent.appendChild( a );

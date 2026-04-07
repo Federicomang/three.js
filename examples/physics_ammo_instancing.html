@@ -14,10 +14,6 @@
 
 		<script src="jsm/libs/ammo.wasm.js"></script>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -64,14 +60,24 @@
 				dirLight.shadow.camera.zoom = 2;
 				scene.add( dirLight );
 
-				const floor = new THREE.Mesh(
-					new THREE.BoxGeometry( 10, 5, 10 ),
-					new THREE.ShadowMaterial( { color: 0x444444 } )
+				const shadowPlane = new THREE.Mesh(
+					new THREE.PlaneGeometry( 10, 10 ),
+					new THREE.ShadowMaterial( {
+						color: 0x444444
+					} ),
 				);
-				floor.position.y = - 2.5;
-				floor.receiveShadow = true;
-				scene.add( floor );
-				physics.addMesh( floor );
+				shadowPlane.rotation.x = - Math.PI / 2;
+				shadowPlane.receiveShadow = true;
+				scene.add( shadowPlane );
+
+				const floorCollider = new THREE.Mesh(
+					new THREE.BoxGeometry( 10, 5, 10 ),
+					new THREE.MeshBasicMaterial( { color: 0x666666 } )
+				);
+				floorCollider.position.y = - 2.5;
+				floorCollider.userData.physics = { mass: 0 };
+				floorCollider.visible = false;
+				scene.add( floorCollider );
 
 				//
 
@@ -87,6 +93,7 @@
 				boxes.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); // will be updated every frame
 				boxes.castShadow = true;
 				boxes.receiveShadow = true;
+				boxes.userData.physics = { mass: 1 };
 				scene.add( boxes );
 
 				for ( let i = 0; i < boxes.count; i ++ ) {
@@ -97,8 +104,6 @@
 
 				}
 
-				physics.addMesh( boxes, 1 );
-
 				// Spheres
 
 				const geometrySphere = new THREE.IcosahedronGeometry( 0.05, 4 );
@@ -106,6 +111,7 @@
 				spheres.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); // will be updated every frame
 				spheres.castShadow = true;
 				spheres.receiveShadow = true;
+				spheres.userData.physics = { mass: 1 };
 				scene.add( spheres );
 
 				for ( let i = 0; i < spheres.count; i ++ ) {
@@ -116,13 +122,14 @@
 
 				}
 
-				physics.addMesh( spheres, 1 );
+				physics.addScene( scene );
 
 				//
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				renderer.shadowMap.enabled = true;
 				document.body.appendChild( renderer.domElement );
 
@@ -134,8 +141,6 @@
 				const controls = new OrbitControls( camera, renderer.domElement );
 				controls.target.y = 0.5;
 				controls.update();
-
-				animate();
 
 				setInterval( () => {
 
@@ -156,8 +161,6 @@
 			}
 
 			function animate() {
-
-				requestAnimationFrame( animate );
 
 				renderer.render( scene, camera );
 

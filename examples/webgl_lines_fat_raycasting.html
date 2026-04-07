@@ -13,10 +13,6 @@
 
 		<div id="info"><a href="https://threejs.org" target="_blank">three.js</a> - fat lines raycasting</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -30,8 +26,6 @@
 
 			import * as THREE from 'three';
 
-			import Stats from 'three/addons/libs/stats.module.js';
-			import { GPUStatsPanel } from 'three/addons/utils/GPUStatsPanel.js';
 
 			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -44,9 +38,8 @@
 			let line, thresholdLine, segments, thresholdSegments;
 			let renderer, scene, camera, controls;
 			let sphereInter, sphereOnLine;
-			let stats, gpuPanel;
 			let gui;
-			let clock;
+			let timer;
 
 			const color = new THREE.Color();
 
@@ -64,7 +57,6 @@
 				worldUnits: true,
 				vertexColors: true,
 
-				//resolution:  // to be set by renderer, eventually
 				alphaToCoverage: true,
 
 			} );
@@ -79,7 +71,6 @@
 				opacity: 0.2,
 				depthTest: false,
 				visible: false,
-				//resolution:  // to be set by renderer, eventually
 
 			} );
 
@@ -91,22 +82,23 @@
 				'width': matLine.linewidth,
 				'alphaToCoverage': matLine.alphaToCoverage,
 				'threshold': raycaster.params.Line2.threshold,
-				'translation': raycaster.params.Line2.threshold,
+				'translation': 0,
 				'animate': true
 
 			};
 
 			init();
-			animate();
 
 			function init() {
 
-				clock = new THREE.Clock();
+				timer = new THREE.Timer();
+				timer.connect( document );
 
 				renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setClearColor( 0x000000, 0.0 );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setClearColor( 0x000000, 0.0 );
+				renderer.setAnimationLoop( animate );
 				document.body.appendChild( renderer.domElement );
 
 				scene = new THREE.Scene();
@@ -200,12 +192,6 @@
 				window.addEventListener( 'resize', onWindowResize );
 				onWindowResize();
 
-				stats = new Stats();
-				document.body.appendChild( stats.dom );
-
-				gpuPanel = new GPUStatsPanel( renderer.getContext() );
-				stats.addPanel( gpuPanel );
-				stats.showPanel( 0 );
 				initGui();
 
 			}
@@ -216,10 +202,6 @@
 				camera.updateProjectionMatrix();
 
 				renderer.setSize( window.innerWidth, window.innerHeight );
-
-				// renderer will set this eventually
-				matLine.resolution.set( window.innerWidth, window.innerHeight );
-				matThresholdLine.resolution.set( window.innerWidth, window.innerHeight );
 
 			}
 
@@ -232,11 +214,9 @@
 
 			function animate() {
 
-				requestAnimationFrame( animate );
+				timer.update();
 
-				stats.update();
-
-				const delta = clock.getDelta();
+				const delta = timer.getDelta();
 
 				const obj = line.visible ? line : segments;
 				thresholdLine.position.copy( line.position );
@@ -282,9 +262,7 @@
 
 				}
 
-				gpuPanel.startQuery();
 				renderer.render( scene, camera );
-				gpuPanel.endQuery();
 
 			}
 
@@ -329,10 +307,7 @@
 				gui.add( params, 'world units' ).onChange( function ( val ) {
 
 					matLine.worldUnits = val;
-					matLine.needsUpdate = true;
-
 					matThresholdLine.worldUnits = val;
-					matThresholdLine.needsUpdate = true;
 
 				} );
 

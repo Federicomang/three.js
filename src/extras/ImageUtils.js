@@ -3,9 +3,21 @@ import { SRGBToLinear } from '../math/ColorManagement.js';
 
 let _canvas;
 
+/**
+ * A class containing utility functions for images.
+ *
+ * @hideconstructor
+ */
 class ImageUtils {
 
-	static getDataURL( image ) {
+	/**
+	 * Returns a data URI containing a representation of the given image.
+	 *
+	 * @param {(HTMLImageElement|HTMLCanvasElement)} image - The image object.
+	 * @param {string} [type='image/png'] - Indicates the image format.
+	 * @return {string} The data URI.
+	 */
+	static getDataURL( image, type = 'image/png' ) {
 
 		if ( /^data:/i.test( image.src ) ) {
 
@@ -56,7 +68,7 @@ class ImageUtils {
 
 		} else {
 
-			return canvas.toDataURL( 'image/png' );
+			return canvas.toDataURL( type );
 
 		}
 
@@ -121,7 +133,7 @@ class ImageUtils {
 
 		} else {
 
-			console.warn( 'THREE.ImageUtils.sRGBToLinear(): Unsupported image type. No color space conversion applied.' );
+			console.warn( 'ImageUtils.sRGBToLinear(): Unsupported image type. No color space conversion applied.' );
 			return image;
 
 		}

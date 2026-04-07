@@ -14,9 +14,6 @@
 
   <link rel="stylesheet" href="../resources/lesson.css">
   <link rel="stylesheet" href="../resources/lang.css">
-  <!-- Import maps polyfill -->
-  <!-- Remove this when import maps will be widely supported -->
-  <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
 
   <script type="importmap">
 {
@@ -140,7 +137,7 @@ html, body {
           调整画布大小是canvas规范的一个有趣部分，如果它已经是我们想要的大小，最好不要设置相同的大小.</p>
         <p>一旦我们知道了是否需要调整大小我们就调用<code class="notranslate" translate="no">renderer.setSize</code>然后
           传入新的宽高。在末尾传入<code class="notranslate" translate="no">false</code>很重要。
-          <code class="notranslate" translate="no">render.setSize</code>默认会设置canvas的CSS尺寸但这并不是我们想要的。
+          <code class="notranslate" translate="no">renderer.setSize</code>默认会设置canvas的CSS尺寸但这并不是我们想要的。
           我们希望浏览器能继续工作就像其他使用CSS来定义尺寸的其他元素。我们不希望
           three.js使用canvas和其他元素不一样。
         </p>
@@ -218,8 +215,8 @@ html, body {
         <pre class="prettyprint showlinemods notranslate lang-js" translate="no">    function resizeRendererToDisplaySize(renderer) {
       const canvas = renderer.domElement;
       const pixelRatio = window.devicePixelRatio;
-      const width = canvas.clientWidth * pixelRatio | 0;
-      const height = canvas.clientHeight * pixelRatio | 0;
+      const width = Math.floor( canvas.clientWidth * pixelRatio );
+      const height = Math.floor( canvas.clientHeight * pixelRatio );
       const needResize = canvas.width !== width || canvas.height !== height;
       if (needResize) {
         renderer.setSize(width, height, false);

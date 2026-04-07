@@ -20,10 +20,6 @@
 		<div id="container"></div>
 		<div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - webgl terrain + fog demo <br />(left click: forward, right click: backward)</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -47,10 +43,10 @@
 			let mesh, texture;
 
 			const worldWidth = 256, worldDepth = 256;
-			const clock = new THREE.Clock();
+			const timer = new THREE.Timer();
+			timer.connect( document );
 
 			init();
-			animate();
 
 			function init() {
 
@@ -89,6 +85,7 @@
 				renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				container.appendChild( renderer.domElement );
 
 				controls = new FirstPersonControls( camera, renderer.domElement );
@@ -111,8 +108,6 @@
 				camera.updateProjectionMatrix();
 
 				renderer.setSize( window.innerWidth, window.innerHeight );
-
-				controls.handleResize();
 
 			}
 
@@ -218,7 +213,7 @@
 
 			function animate() {
 
-				requestAnimationFrame( animate );
+				timer.update();
 
 				render();
 				stats.update();
@@ -228,7 +223,7 @@
 
 			function render() {
 
-				controls.update( clock.getDelta() );
+				controls.update( timer.getDelta() );
 				renderer.render( scene, camera );
 
 			}

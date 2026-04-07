@@ -17,10 +17,6 @@
 
 		<script src="jsm/libs/ammo.wasm.js"></script>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -52,7 +48,8 @@
 			let container, stats;
 			let camera, scene, renderer;
 			let terrainMesh;
-			const clock = new THREE.Clock();
+			const timer = new THREE.Timer();
+			timer.connect( document );
 
 			// Physics variables
 			let collisionConfiguration;
@@ -76,7 +73,6 @@
 				Ammo = AmmoLib;
 
 				init();
-				animate();
 
 			} );
 
@@ -97,6 +93,7 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				renderer.shadowMap.enabled = true;
 				container.appendChild( renderer.domElement );
 
@@ -395,7 +392,7 @@
 
 			function animate() {
 
-				requestAnimationFrame( animate );
+				timer.update();
 
 				render();
 				stats.update();
@@ -404,7 +401,7 @@
 
 			function render() {
 
-				const deltaTime = clock.getDelta();
+				const deltaTime = timer.getDelta();
 
 				if ( dynamicObjects.length < maxNumObjects && time > timeNextSpawn ) {
 

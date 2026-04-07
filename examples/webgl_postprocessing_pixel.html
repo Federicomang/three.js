@@ -16,10 +16,6 @@
 
 	<div id="container"></div>
 
-	<!-- Import maps polyfill -->
-	<!-- Remove this when import maps will be widely supported -->
-	<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 	<script type="importmap">
 		{
 			"imports": {
@@ -39,11 +35,10 @@
 		import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 		import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
-		let camera, scene, renderer, composer, crystalMesh, clock;
+		let camera, scene, renderer, composer, crystalMesh, timer;
 		let gui, params;
 
 		init();
-		animate();
 
 		function init() {
 
@@ -56,12 +51,14 @@
 			scene = new THREE.Scene();
 			scene.background = new THREE.Color( 0x151729 );
 
-			clock = new THREE.Clock();
+			timer = new THREE.Timer();
+			timer.connect( document );
 
 			renderer = new THREE.WebGLRenderer();
 			renderer.shadowMap.enabled = true;
 			//renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setAnimationLoop( animate );
 			document.body.appendChild( renderer.domElement );
 
 			composer = new EffectComposer( renderer );
@@ -176,9 +173,9 @@
 
 		function animate() {
 
-			requestAnimationFrame( animate );
+			timer.update();
 
-			const t = clock.getElapsedTime();
+			const t = timer.getElapsed();
 
 			crystalMesh.material.emissiveIntensity = Math.sin( t * 3 ) * .5 + .5;
 			crystalMesh.position.y = .7 + Math.sin( t * 2 ) * .05;

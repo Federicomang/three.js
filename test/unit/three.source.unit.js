@@ -129,11 +129,9 @@ import './src/helpers/SpotLightHelper.tests.js';
 
 //src/lights
 import './src/lights/AmbientLight.tests.js';
-import './src/lights/AmbientLightProbe.tests.js';
 import './src/lights/DirectionalLight.tests.js';
 import './src/lights/DirectionalLightShadow.tests.js';
 import './src/lights/HemisphereLight.tests.js';
-import './src/lights/HemisphereLightProbe.tests.js';
 import './src/lights/Light.tests.js';
 import './src/lights/LightProbe.tests.js';
 import './src/lights/LightShadow.tests.js';
@@ -217,6 +215,7 @@ import './src/math/interpolants/QuaternionLinearInterpolant.tests.js';
 
 //src/objects
 import './src/objects/Bone.tests.js';
+import './src/objects/BatchedMesh.tests.js';
 import './src/objects/Group.tests.js';
 import './src/objects/InstancedMesh.tests.js';
 import './src/objects/Line.tests.js';
@@ -231,11 +230,9 @@ import './src/objects/Sprite.tests.js';
 
 
 //src/renderers
-import './src/renderers/WebGL1Renderer.tests.js';
 import './src/renderers/WebGL3DRenderTarget.tests.js';
 import './src/renderers/WebGLArrayRenderTarget.tests.js';
 import './src/renderers/WebGLCubeRenderTarget.tests.js';
-import './src/renderers/WebGLMultipleRenderTargets.tests.js';
 import './src/renderers/WebGLRenderer.tests.js';
 import './src/renderers/WebGLRenderTarget.tests.js';
 
@@ -288,3 +285,8 @@ import './src/textures/FramebufferTexture.tests.js';
 import './src/textures/Source.tests.js';
 import './src/textures/Texture.tests.js';
 import './src/textures/VideoTexture.tests.js';
+
+
+//src/nodes/display
+import './src/nodes/display/ViewportTextureNode.tests.js';
+import './src/nodes/display/ViewportDepthTextureNode.tests.js';

@@ -17,10 +17,6 @@
 
 	<script src="jsm/libs/ammo.wasm.js"></script>
 
-	<!-- Import maps polyfill -->
-	<!-- Remove this when import maps will be widely supported -->
-	<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 	<script type="importmap">
 		{
 			"imports": {
@@ -45,7 +41,8 @@
 		let container, stats;
 		let camera, controls, scene, renderer;
 		let textureLoader;
-		const clock = new THREE.Clock();
+		const timer = new THREE.Timer();
+		timer.connect( document );
 
 		const mouseCoords = new THREE.Vector2();
 		const raycaster = new THREE.Raycaster();
@@ -90,7 +87,6 @@
 			Ammo = AmmoLib;
 
 			init();
-			animate();
 
 		} );
 
@@ -123,6 +119,7 @@
 			renderer = new THREE.WebGLRenderer( { antialias: true } );
 			renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setAnimationLoop( animate );
 			renderer.shadowMap.enabled = true;
 			container.appendChild( renderer.domElement );
 
@@ -342,9 +339,10 @@
 			physicsShape.calculateLocalInertia( mass, localInertia );
 
 			const rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, physicsShape, localInertia );
-			const body = new Ammo.btRigidBody( rbInfo );
+			rbInfo.set_m_restitution( 0.5 );
+			rbInfo.set_m_friction( 0.5 );
 
-			body.setFriction( 0.5 );
+			const body = new Ammo.btRigidBody( rbInfo );
 
 			if ( vel ) {
 
@@ -435,7 +433,7 @@
 
 		function animate() {
 
-			requestAnimationFrame( animate );
+			timer.update();
 
 			render();
 			stats.update();
@@ -444,7 +442,7 @@
 
 		function render() {
 
-			const deltaTime = clock.getDelta();
+			const deltaTime = timer.getDelta();
 
 			updatePhysics( deltaTime );
 
@@ -544,7 +542,7 @@
 
 				if ( breakable0 && ! collided0 && maxImpulse > fractureImpulse ) {
 
-					const debris = convexBreaker.subdivideByImpact( threeObject0, impactPoint, impactNormal, 1, 2, 1.5 );
+					const debris = convexBreaker.subdivideByImpact( threeObject0, impactPoint, impactNormal, 1, 2 );
 
 					const numObjects = debris.length;
 					for ( let j = 0; j < numObjects; j ++ ) {
@@ -566,7 +564,7 @@
 
 				if ( breakable1 && ! collided1 && maxImpulse > fractureImpulse ) {
 
-					const debris = convexBreaker.subdivideByImpact( threeObject1, impactPoint, impactNormal, 1, 2, 1.5 );
+					const debris = convexBreaker.subdivideByImpact( threeObject1, impactPoint, impactNormal, 1, 2 );
 
 					const numObjects = debris.length;
 					for ( let j = 0; j < numObjects; j ++ ) {

@@ -12,10 +12,6 @@
 			skybox by <a href="https://www.pauldebevec.com/" target="_blank" rel="noopener">Paul Debevec</a>
 		</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -44,7 +40,6 @@
 			document.addEventListener( 'mousemove', onDocumentMouseMove );
 
 			init();
-			animate();
 
 			function init() {
 
@@ -90,6 +85,7 @@
 
 				renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setAnimationLoop( animate );
 				container.appendChild( renderer.domElement );
 
 				const width = window.innerWidth || 2;
@@ -97,6 +93,12 @@
 
 				effect = new AnaglyphEffect( renderer );
 				effect.setSize( width, height );
+
+				// Configure stereo parameters for physically-correct rendering
+				// eyeSep: interpupillary distance (default 0.064m / 64mm for humans)
+				// planeDistance: distance to the zero-parallax plane (objects here appear at screen depth)
+				effect.eyeSep = 0.064;
+				effect.planeDistance = 3; // Match camera distance to origin for zero parallax at scene center
 
 				//
 
@@ -126,8 +128,6 @@
 			//
 
 			function animate() {
-
-				requestAnimationFrame( animate );
 
 				render();
 

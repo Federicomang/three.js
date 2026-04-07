@@ -11,10 +11,6 @@
 
     <link rel="stylesheet" href="../resources/lesson.css">
     <link rel="stylesheet" href="../resources/lang.css">
-<!-- Import maps polyfill -->
-<!-- Remove this when import maps will be widely supported -->
-<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 <script type="importmap">
 {
   "imports": {
@@ -130,13 +126,13 @@ manager.onLoad = init;
   height: 1em;
   background-color: #888;
   background-image: linear-gradient(
-    -45deg, 
-    rgba(255, 255, 255, .5) 25%, 
-    transparent 25%, 
-    transparent 50%, 
-    rgba(255, 255, 255, .5) 50%, 
-    rgba(255, 255, 255, .5) 75%, 
-    transparent 75%, 
+    -45deg,
+    rgba(255, 255, 255, .5) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, .5) 50%,
+    rgba(255, 255, 255, .5) 75%,
+    transparent 75%,
     transparent
   );
   background-size: 50px 50px;
@@ -628,13 +624,13 @@ function render(now) {
 <p>이제 사용자 입력 시스템을 추가해봅시다. 단순히 키보드 이벤트에 직접 코드를 작성하기보다 클래스를 만들어 코드의 다른 부분에서도 <code class="notranslate" translate="no">왼쪽</code>, <code class="notranslate" translate="no">오른쪽</code>을 확인할 수 있도록 하겠습니다. 이러면 <code class="notranslate" translate="no">왼쪽</code>, <code class="notranslate" translate="no">오른쪽</code> 등 다양한 키를 다양한 방법으로 지정할 수 있겠죠. 먼저 키보드 이벤트부터 지정합시다.</p>
 <pre class="prettyprint showlinemods notranslate lang-js" translate="no">/**
  * 키 또는 버튼의 상태를 추적합니다.
- * 
+ *
  * 왼쪽 방향키가 눌렸는지 확인하려면
- * 
+ *
  *     inputManager.keys.left.down
  *
  * 을 확인하고, 현재 프레임에서 왼쪽 키를 눌렀는지 확인하려면
- * 
+ *
  *     inputManager.keys.left.justPressed
  *
  * 를 확인하면 됩니다.
@@ -1210,7 +1206,7 @@ class Animal extends Component {
 +    globals.playerRadius = model.size / 2;
 </pre>
 <p>이제 와 생각해보니 플레이어가 아니라 기차의 머리를 바라보게 하는 편이 더 나았겠네요. 이건 나중에 돌아와 고치도록 하겠습니다.</p>
-<p>예제를 처음 만들었을 때는 동물들이 모두 같은 크기의 경계 원(radius)을 썼지만, 이렇게 하고 보니 말과 퍼그(강아지)의 크기가 같은 게 말이 안 된다는 생각이 들었습니다. 그래서 각 모델의 크기에 따라 경계 원을 따로 지정했죠. 그리고 상태를 보여주면 좋겠다는 생각이 들어 상태를 보여 줄 <code class="notranslate" translate="no">StatusDisplayHelper</code> 컴포넌트를 추가했습니다.</p>
+<p>예제를 처음 만들었을 때는 동물들이 모두 같은 크기의 경계 원(radius)을 썼지만, 이렇게 하고 보니 말과 퍼그(강아지)의 크기가 같은 게 말이 안 된다는 생각이 들었습니다. 그래서 각 모델의 크기에 따라 경계 원을 따로 지정했죠. 그리고 상태를 보여주면 좋겠다는 생각이 들어 상태를 보여 줄 <code class="notranslate" translate="no">StateDisplayHelper</code> 컴포넌트를 추가했습니다.</p>
 <p>또한 <a href="/docs/#api/ko/helpers/PolarGridHelper"><code class="notranslate" translate="no">PolarGridHelper</code></a>를 써 각 캐릭터의 경계 원이 보이도록 했고, <a href="align-html-elements-to-3d.html">HTML 요소를 3D로 정렬하기</a>에서 썼던 방법으로 각 캐릭터의 상태를 HTML로 보여주도록 했습니다.</p>
 <p>먼저 각 요소를 담을 HTML을 추가합니다.</p>
 <pre class="prettyprint showlinemods notranslate lang-html" translate="no">&lt;body&gt;
@@ -1442,7 +1438,7 @@ class CoroutineRunner {
 <p>위 클래스는 다른 코루틴이 실행되는 동안 요소를 안전하게 제거/추가하도록 <code class="notranslate" translate="no">SafeArray</code>와 비슷한 구조로 만들었습니다. 또한 이 클래스는 중첩된 코루틴도 처리합니다.</p>
 <p>코루틴을 만들려면 자바스크립트의 <a href="https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Statements/function*">제너레이터 함수</a>를 만들어야 합니다. 제너레이터 함수는 <code class="notranslate" translate="no">function*</code>이라는 키워드로 생성하죠(별표를 붙여야 합니다!).</p>
 <p>제너레이터 함수는 <code class="notranslate" translate="no">yield</code> 키워드로 실행 순서를 <strong>양보(yield)</strong>할 수 있습니다.</p>
-<pre class="prettyprint showlinemods notranslate lang-js" translate="no">function* countOTo9() {
+<pre class="prettyprint showlinemods notranslate lang-js" translate="no">function* count0To9() {
   for (let i = 0; i &lt; 10; ++i) {
     console.log(i);
     yield;
@@ -1648,7 +1644,7 @@ function* animalCoroutine() {
         </div>
       </div>
     </div>
-  
+
   <script src="../resources/prettify.js"></script>
   <script src="../resources/lesson.js"></script>
 

@@ -10,10 +10,6 @@
 
 		<div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - convex geometry</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -34,7 +30,6 @@
 			let group, camera, scene, renderer;
 
 			init();
-			animate();
 
 			function init() {
 
@@ -43,6 +38,7 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				document.body.appendChild( renderer.domElement );
 
 				// camera
@@ -84,7 +80,7 @@
 
 				let dodecahedronGeometry = new THREE.DodecahedronGeometry( 10 );
 
-				// if normal and uv attributes are not removed, mergeVertices() can't consolidate indentical vertices with different normal/uv data
+				// if normal and uv attributes are not removed, mergeVertices() can't consolidate identical vertices with different normal/uv data
 
 				dodecahedronGeometry.deleteAttribute( 'normal' );
 				dodecahedronGeometry.deleteAttribute( 'uv' );
@@ -145,15 +141,7 @@
 
 			function animate() {
 
-				requestAnimationFrame( animate );
-
 				group.rotation.y += 0.005;
-
-				render();
-
-			}
-
-			function render() {
 
 				renderer.render( scene, camera );
 

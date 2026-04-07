@@ -11,10 +11,6 @@
 
     <link rel="stylesheet" href="../resources/lesson.css">
     <link rel="stylesheet" href="../resources/lang.css">
-<!-- Import maps polyfill -->
-<!-- Remove this when import maps will be widely supported -->
-<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 <script type="importmap">
 {
   "imports": {
@@ -46,14 +42,14 @@ const near = 0.1;
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 +camera.position.set(0, 10, 20);
 </pre>
-<p>Next let's add <a href="/docs/#examples/controls/OrbitControls"><code class="notranslate" translate="no">OrbitControls</code></a>. <a href="/docs/#examples/controls/OrbitControls"><code class="notranslate" translate="no">OrbitControls</code></a> let the user spin
-or <em>orbit</em> the camera around some point. The <a href="/docs/#examples/controls/OrbitControls"><code class="notranslate" translate="no">OrbitControls</code></a> are
+<p>Next let's add <a href="/docs/#examples/en/controls/OrbitControls" target="_blank"><code class="notranslate" translate="no">OrbitControls</code></a>. <a href="/docs/#examples/en/controls/OrbitControls" target="_blank"><code class="notranslate" translate="no">OrbitControls</code></a> let the user spin
+or <em>orbit</em> the camera around some point. The <a href="/docs/#examples/en/controls/OrbitControls" target="_blank"><code class="notranslate" translate="no">OrbitControls</code></a> are
 an optional feature of three.js so first we need to include them
 in our page</p>
 <pre class="prettyprint showlinemods notranslate lang-js" translate="no">import * as THREE from 'three';
 +import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 </pre>
-<p>Then we can use them. We pass the <a href="/docs/#examples/controls/OrbitControls"><code class="notranslate" translate="no">OrbitControls</code></a> a camera to
+<p>Then we can use them. We pass the <a href="/docs/#examples/en/controls/OrbitControls" target="_blank"><code class="notranslate" translate="no">OrbitControls</code></a> a camera to
 control and the DOM element to use to get input events</p>
 <pre class="prettyprint showlinemods notranslate lang-js" translate="no">const controls = new OrbitControls(camera, canvas);
 controls.target.set(0, 5, 0);
@@ -143,7 +139,7 @@ color.</p>
     this.prop = prop;
   }
   get value() {
-    return `#${this.object[this.prop].getHexString()}`;
+    return '#' + this.object[this.prop].getHexString();
   }
   set value(hexString) {
     this.object[this.prop].set(hexString);
@@ -153,7 +149,7 @@ color.</p>
 <p>And here's our code setting up lil-gui</p>
 <pre class="prettyprint showlinemods notranslate lang-js" translate="no">const gui = new GUI();
 gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-gui.add(light, 'intensity', 0, 2, 0.01);
+gui.add(light, 'intensity', 0, 5, 0.01);
 </pre>
 <p>And here's the result</p>
 <p></p><div translate="no" class="threejs_example_container notranslate">
@@ -192,7 +188,7 @@ scene.add(light);
 -gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
 +gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('skyColor');
 +gui.addColor(new ColorGUIHelper(light, 'groundColor'), 'value').name('groundColor');
-gui.add(light, 'intensity', 0, 2, 0.01);
+gui.add(light, 'intensity', 0, 5, 0.01);
 </pre>
 <p>The result:</p>
 <p></p><div translate="no" class="threejs_example_container notranslate">
@@ -224,7 +220,7 @@ in the direction of its target.</p>
 our GUI.</p>
 <pre class="prettyprint showlinemods notranslate lang-js" translate="no">const gui = new GUI();
 gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-gui.add(light, 'intensity', 0, 2, 0.01);
+gui.add(light, 'intensity', 0, 5, 0.01);
 gui.add(light.target.position, 'x', -10, 10);
 gui.add(light.target.position, 'z', -10, 10);
 gui.add(light.target.position, 'y', 0, 10);
@@ -270,7 +266,7 @@ and the target's position like this</p>
 
 const gui = new GUI();
 gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-gui.add(light, 'intensity', 0, 2, 0.01);
+gui.add(light, 'intensity', 0, 5, 0.01);
 
 +makeXYZGUI(gui, light.position, 'position', updateLight);
 +makeXYZGUI(gui, light.target.position, 'target', updateLight);
@@ -323,7 +319,7 @@ units away from the light.</p>
 <p>Let's setup the GUI so we can adjust the distance.</p>
 <pre class="prettyprint showlinemods notranslate lang-js" translate="no">const gui = new GUI();
 gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-gui.add(light, 'intensity', 0, 2, 0.01);
+gui.add(light, 'intensity', 0, 250, 1);
 +gui.add(light, 'distance', 0, 40).onChange(updateLight);
 
 makeXYZGUI(gui, light.position, 'position', updateLight);
@@ -484,7 +480,7 @@ possible to achieve your goals.</p>
         </div>
       </div>
     </div>
-  
+
   <script src="../resources/prettify.js"></script>
   <script src="../resources/lesson.js"></script>
 

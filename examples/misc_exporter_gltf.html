@@ -11,10 +11,6 @@
 			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - exporter - gltf
 		</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -33,10 +29,11 @@
 			import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 			import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+			import * as TextureUtils from 'three/addons/utils/WebGLTextureUtils.js';
 
 			function exportGLTF( input ) {
 
-				const gltfExporter = new GLTFExporter();
+				const gltfExporter = new GLTFExporter().setTextureUtils( TextureUtils );
 
 				const options = {
 					trs: params.trs,
@@ -101,7 +98,7 @@
 			let container;
 
 			let camera, object, object2, material, geometry, scene1, scene2, renderer;
-			let gridHelper, sphere, model, coffeemat;
+			let gridHelper, sphere, model, coffeemat, webpBox;
 
 			const params = {
 				trs: false,
@@ -115,10 +112,10 @@
 				exportObjects: exportObjects,
 				exportSceneObject: exportSceneObject,
 				exportCompressedObject: exportCompressedObject,
+				exportWebPModel: exportWebPModel,
 			};
 
 			init();
-			animate();
 
 			function init() {
 
@@ -240,9 +237,10 @@
 					color: 0xffff00,
 					metalness: 0.5,
 					roughness: 1.0,
-					flatShading: true
+					flatShading: true,
 				} );
 				material.map = gradientTexture;
+				material.bumpMap = mapGrid;
 				sphere = new THREE.Mesh( new THREE.SphereGeometry( 70, 10, 10 ), material );
 				sphere.position.set( 0, 0, 0 );
 				sphere.name = 'Sphere';
@@ -372,7 +370,13 @@
 				// ---------------------------------------------------------------------
 				// Ortho camera
 				// ---------------------------------------------------------------------
-				const cameraOrtho = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 0.1, 10 );
+
+				const height = 1000; // frustum height
+				const aspect = window.innerWidth / window.innerHeight;
+
+				const cameraOrtho = new THREE.OrthographicCamera( - height * aspect, height * aspect, height, - height, 0, 2000 );
+				cameraOrtho.position.set( 600, 400, 0 );
+				cameraOrtho.lookAt( 0, 0, 0 );
 				scene1.add( cameraOrtho );
 				cameraOrtho.name = 'OrthographicCamera';
 
@@ -432,6 +436,27 @@
 				} );
 
 				// ---------------------------------------------------------------------
+				// Model requiring KHR_mesh_quantization
+				// ---------------------------------------------------------------------
+
+				material = new THREE.MeshBasicMaterial( {
+					color: 0xffffff,
+				} );
+				object = new THREE.InstancedMesh( new THREE.BoxGeometry( 10, 10, 10, 2, 2, 2 ), material, 50 );
+				const matrix = new THREE.Matrix4();
+				const color = new THREE.Color();
+				for ( let i = 0; i < 50; i ++ ) {
+
+					matrix.setPosition( Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50 );
+					object.setMatrixAt( i, matrix );
+					object.setColorAt( i, color.setHSL( i / 50, 1, 0.5 ) );
+
+				}
+
+				object.position.set( 400, 0, 200 );
+				scene1.add( object );
+
+				// ---------------------------------------------------------------------
 				// 2nd THREE.Scene
 				// ---------------------------------------------------------------------
 				scene2 = new THREE.Scene();
@@ -446,6 +471,7 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				renderer.toneMapping = THREE.ACESFilmicToneMapping;
 				renderer.toneMappingExposure = 1;
 
@@ -476,6 +502,30 @@
 
 				} );
 
+				// ---------------------------------------------------------------------
+				// Box with WebP texture (EXT_texture_webp)
+				// ---------------------------------------------------------------------
+				const canvas = document.createElement( 'canvas' );
+				canvas.width = 64;
+				canvas.height = 64;
+				const ctx = canvas.getContext( '2d' );
+				ctx.fillStyle = '#005BBB';
+				ctx.fillRect( 0, 0, 64, 64 );
+				ctx.fillStyle = '#FFD500';
+				ctx.fillRect( 16, 16, 32, 32 );
+
+				const webpTexture = new THREE.CanvasTexture( canvas );
+				webpTexture.userData.mimeType = 'image/webp';
+				webpTexture.colorSpace = THREE.SRGBColorSpace;
+
+				webpBox = new THREE.Mesh(
+					new THREE.BoxGeometry( 100, 100, 100 ),
+					new THREE.MeshBasicMaterial( { map: webpTexture } )
+				);
+				webpBox.position.set( 400, 0, 0 );
+				webpBox.name = 'WebPBox';
+				scene1.add( webpBox );
+
 				//
 
 				const gui = new GUI();
@@ -494,6 +544,7 @@
 				h.add( params, 'exportObjects' ).name( 'Export Sphere With Grid' );
 				h.add( params, 'exportSceneObject' ).name( 'Export Scene 1 and Object' );
 				h.add( params, 'exportCompressedObject' ).name( 'Export Coffeemat (from compressed data)' );
+				h.add( params, 'exportWebPModel' ).name( 'Export WebP Model (EXT_texture_webp)' );
 
 				gui.open();
 
@@ -541,6 +592,12 @@
 
 			}
 
+			function exportWebPModel() {
+
+				exportGLTF( webpBox );
+
+			}
+
 			function onWindowResize() {
 
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -554,14 +611,6 @@
 
 			function animate() {
 
-				requestAnimationFrame( animate );
-
-				render();
-
-			}
-
-			function render() {
-
 				const timer = Date.now() * 0.0001;
 
 				camera.position.x = Math.cos( timer ) * 800;
@@ -571,6 +620,8 @@
 				renderer.render( scene1, camera );
 
 			}
+
+
 
 		</script>
 

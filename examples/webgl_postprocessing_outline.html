@@ -11,10 +11,6 @@
 			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - Outline Pass by <a href="http://eduperiment.com" target="_blank" rel="noopener">Prashant Sharma</a> and <a href="https://clara.io" target="_blank" rel="noopener">Ben Houston</a><br/><br/>
 		</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -119,7 +115,6 @@
 			} );
 
 			init();
-			animate();
 
 			function init() {
 
@@ -133,6 +128,7 @@
 				renderer.shadowMap.enabled = true;
 				// todo - support pixelRatio in this demo
 				renderer.setSize( width, height );
+				renderer.setAnimationLoop( animate );
 				document.body.appendChild( renderer.domElement );
 
 				scene = new THREE.Scene();
@@ -152,7 +148,7 @@
 				scene.add( new THREE.AmbientLight( 0xaaaaaa, 0.6 ) );
 
 				const light = new THREE.DirectionalLight( 0xddffdd, 2 );
-				light.position.set( 1, 1, 1 );
+				light.position.set( 5, 5, 5 );
 				light.castShadow = true;
 				light.shadow.mapSize.width = 1024;
 				light.shadow.mapSize.height = 1024;
@@ -163,7 +159,7 @@
 				light.shadow.camera.right = d;
 				light.shadow.camera.top = d;
 				light.shadow.camera.bottom = - d;
-				light.shadow.camera.far = 1000;
+				light.shadow.camera.far = 25;
 
 				scene.add( light );
 
@@ -330,8 +326,6 @@
 			}
 
 			function animate() {
-
-				requestAnimationFrame( animate );
 
 				stats.begin();
 

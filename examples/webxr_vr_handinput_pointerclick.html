@@ -12,12 +12,7 @@
 
 	<div id="info">
 		<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a>	vr - handinput - point and click<br />
-		(Oculus Browser 15.1+)
 	</div>
-
-	<!-- Import maps polyfill -->
-	<!-- Remove this when import maps will be widely supported -->
-	<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
 
 	<script type="importmap">
 		{
@@ -275,11 +270,11 @@
 		};
 
 		const world = new World();
-		const clock = new THREE.Clock();
+		const timer = new THREE.Timer();
+		timer.connect( document );
 		let camera, scene, renderer;
 
 		init();
-		animate();
 
 		function makeButtonMesh( x, y, z, color ) {
 
@@ -318,13 +313,18 @@
 			renderer = new THREE.WebGLRenderer( { antialias: true } );
 			renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setAnimationLoop( animate );
 			renderer.shadowMap.enabled = true;
 			renderer.xr.enabled = true;
 			renderer.xr.cameraAutoUpdate = false;
 
 			container.appendChild( renderer.domElement );
 
-			document.body.appendChild( VRButton.createButton( renderer ) );
+			const sessionInit = {
+				requiredFeatures: [ 'hand-tracking' ]
+			};
+
+			document.body.appendChild( VRButton.createButton( renderer, sessionInit ) );
 
 			// controllers
 			const controller1 = renderer.xr.getController( 0 );
@@ -508,14 +508,10 @@
 
 		function animate() {
 
-			renderer.setAnimationLoop( render );
+			timer.update();
 
-		}
-
-		function render() {
-
-			const delta = clock.getDelta();
-			const elapsedTime = clock.elapsedTime;
+			const delta = timer.getDelta();
+			const elapsedTime = timer.getElapsed();
 			renderer.xr.updateCamera( camera );
 			world.execute( delta, elapsedTime );
 			renderer.render( scene, camera );

@@ -22,10 +22,6 @@
 			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - orbit controls
 		</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -44,8 +40,7 @@
 			let camera, controls, scene, renderer;
 
 			init();
-			//render(); // remove when using next line for animation loop (requestAnimationFrame)
-			animate();
+			//render(); // remove when using animation loop
 
 			function init() {
 
@@ -56,6 +51,7 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				document.body.appendChild( renderer.domElement );
 
 				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1000 );
@@ -76,6 +72,8 @@
 				controls.minDistance = 100;
 				controls.maxDistance = 500;
 
+				controls.cursorStyle = 'grab';
+
 				controls.maxPolarAngle = Math.PI / 2;
 
 				// world
@@ -83,17 +81,21 @@
 				const geometry = new THREE.ConeGeometry( 10, 30, 4, 1 );
 				const material = new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } );
 
+				const mesh = new THREE.InstancedMesh( geometry, material, 500 );
+				const dummy = new THREE.Object3D();
+
 				for ( let i = 0; i < 500; i ++ ) {
 
-					const mesh = new THREE.Mesh( geometry, material );
-					mesh.position.x = Math.random() * 1600 - 800;
-					mesh.position.y = 0;
-					mesh.position.z = Math.random() * 1600 - 800;
-					mesh.updateMatrix();
-					mesh.matrixAutoUpdate = false;
-					scene.add( mesh );
+					dummy.position.x = Math.random() * 1600 - 800;
+					dummy.position.y = 0;
+					dummy.position.z = Math.random() * 1600 - 800;
+
+					dummy.updateMatrix();
+					mesh.setMatrixAt( i, dummy.matrix );
 
 				}
+
+				scene.add( mesh );
 
 				// lights
 
@@ -124,8 +126,6 @@
 			}
 
 			function animate() {
-
-				requestAnimationFrame( animate );
 
 				controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true
 

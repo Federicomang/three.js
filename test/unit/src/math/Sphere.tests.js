@@ -1,5 +1,3 @@
-/* global QUnit */
-
 import { Box3 } from '../../../../src/math/Box3.js';
 import { Vector3 } from '../../../../src/math/Vector3.js';
 import { Sphere } from '../../../../src/math/Sphere.js';
@@ -30,6 +28,16 @@ export default QUnit.module( 'Maths', () => {
 		} );
 
 		// PUBLIC
+		QUnit.test( 'isSphere', ( assert ) => {
+
+			const a = new Sphere();
+			assert.ok( a.isSphere === true, 'Passed!' );
+
+			const b = new Box3();
+			assert.ok( ! b.isSphere, 'Passed!' );
+
+		} );
+
 		QUnit.test( 'set', ( assert ) => {
 
 			const a = new Sphere();
@@ -73,12 +81,6 @@ export default QUnit.module( 'Maths', () => {
 			assert.ok( Math.abs( a.center.y - optionalCenter.y ) <= eps, 'Optional center: check center.y' );
 			assert.ok( Math.abs( a.center.z - optionalCenter.z ) <= eps, 'Optional center: check center.z' );
 			assert.ok( Math.abs( a.radius - expectedRadius ) <= eps, 'Optional center: check radius' );
-
-		} );
-
-		QUnit.todo( 'clone', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
 
 		} );
 

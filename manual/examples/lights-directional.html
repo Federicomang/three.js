@@ -20,10 +20,6 @@
   <body>
     <canvas id="c"></canvas>
   </body>
-<!-- Import maps polyfill -->
-<!-- Remove this when import maps will be widely supported -->
-<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 <script type="importmap">
 {
   "imports": {
@@ -139,9 +135,9 @@ function main() {
 		const gui = new GUI();
 		gui.addColor( new ColorGUIHelper( light, 'color' ), 'value' ).name( 'color' );
 		gui.add( light, 'intensity', 0, 5, 0.01 );
-		gui.add( light.target.position, 'x', - 10, 10, .01 );
-		gui.add( light.target.position, 'z', - 10, 10, .01 );
-		gui.add( light.target.position, 'y', 0, 10, .01 );
+		gui.add( light.target.position, 'x', - 10, 10 );
+		gui.add( light.target.position, 'z', - 10, 10 );
+		gui.add( light.target.position, 'y', 0, 10 );
 
 	}
 
@@ -184,4 +180,3 @@ function main() {
 main();
 </script>
 </html>
-

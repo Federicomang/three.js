@@ -14,10 +14,6 @@
 
 	<link rel="stylesheet" href="../resources/lesson.css">
 	<link rel="stylesheet" href="../resources/lang.css">
-<!-- Import maps polyfill -->
-<!-- Remove this when import maps will be widely supported -->
-<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 <script type="importmap">
 {
   "imports": {
@@ -159,7 +155,7 @@ zElem.textContent = someObject.position.z.toFixed(3);
 
 				<p></p>
 				<p>
-					将数据显示在屏幕上的另一种方法是制作一个”清除记录器“。这是我编的一个术语，我参与的很多游戏中都使用了这个方法。其思想是您有一个只显示一帧消息的缓冲区，有显示数据需求的时候，就会调用一些函数向该缓冲区添加每一帧的数据。相对于上一种方法为每个数据都添加一个html元素，这种方法会减少跟多工作量。
+					将数据显示在屏幕上的另一种方法是制作一个”清除记录器“。这是我编的一个术语，我参与的很多游戏中都使用了这个方法。其思想是您有一个只显示一帧消息的缓冲区，有显示数据需求的时候，就会调用一些函数向该缓冲区添加每一帧的数据。相对于上一种方法为每个数据都添加一个html元素，这种方法会减少更多工作量。
 				</p>
 				<p>举个例子，我们把上面的html代码调整为这样</p>
 				<pre class="prettyprint showlinemods notranslate lang-html" translate="no">&lt;canvas id="c"&gt;&lt;/canvas&gt;
@@ -231,7 +227,7 @@ for (let i = 0; i &lt; things.length;) {
   const mesh = thing.mesh;
   const pos = mesh.position;
   logger.log(
-      'timer:', thing.timer.toFixed(3), 
+      'timer:', thing.timer.toFixed(3),
       'pos:', pos.x.toFixed(3), pos.y.toFixed(3), pos.z.toFixed(3));
   thing.timer -= deltaTime;
   if (thing.timer &lt;= 0) {
@@ -270,7 +266,7 @@ requestAnimationFrame(render);
 						translate="no">?debug=true</code>参数的时候，上面的例子才会显示调试数据</p>
 				<p>首先我们需要一些代码来解析携带查询参数字符串</p>
 				<pre class="prettyprint showlinemods notranslate lang-js" translate="no">/**
-* Returns the query parameters as a key/value object. 
+* Returns the query parameters as a key/value object.
 * Example: If the query parameters are
 *
 *    abc=123&amp;def=456&amp;name=gman

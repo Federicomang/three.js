@@ -11,10 +11,6 @@
 		<div id="container"></div>
 		<div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - buffergeometry - custom VBOs</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -48,9 +44,10 @@
 
 				//
 
-				renderer = new THREE.WebGLRenderer( { antialias: false } );
+				renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 
 				container.appendChild( renderer.domElement );
 
@@ -94,7 +91,8 @@
 
 					color.setRGB( vx, vy, vz, THREE.SRGBColorSpace );
 
-					colors.push( color.r, color.g, color.b );
+					const hex = color.getHex( THREE.LinearSRGBColorSpace );
+					colors.push( hex >> 16 & 255, hex >> 8 & 255, hex & 255 );
 
 				}
 
@@ -110,7 +108,7 @@
 
 				const rgb = gl.createBuffer();
 				gl.bindBuffer( gl.ARRAY_BUFFER, rgb );
-				gl.bufferData( gl.ARRAY_BUFFER, new Float32Array( colors ), gl.STATIC_DRAW );
+				gl.bufferData( gl.ARRAY_BUFFER, new Uint8Array( colors ), gl.STATIC_DRAW );
 
 				const posAttr1 = new THREE.GLBufferAttribute( pos, gl.FLOAT, 3, 4, particles );
 				const posAttr2 = new THREE.GLBufferAttribute( pos2, gl.FLOAT, 3, 4, particles );
@@ -124,7 +122,7 @@
 
 				}, 2000 );
 
-				geometry.setAttribute( 'color', new THREE.GLBufferAttribute( rgb, gl.FLOAT, 3, 4, particles ) );
+				geometry.setAttribute( 'color', new THREE.GLBufferAttribute( rgb, gl.UNSIGNED_BYTE, 3, 1, particles, true ) );
 
 				//
 
@@ -132,9 +130,7 @@
 
 				points = new THREE.Points( geometry, material );
 
-				// Choose one:
-				// geometry.boundingSphere = ( new THREE.Sphere() ).set( new THREE.Vector3(), Infinity );
-				points.frustumCulled = false;
+				geometry.boundingSphere = new THREE.Sphere().set( new THREE.Vector3(), 500 );
 
 				scene.add( points );
 
@@ -162,15 +158,6 @@
 
 			function animate() {
 
-				requestAnimationFrame( animate );
-
-				render();
-				stats.update();
-
-			}
-
-			function render() {
-
 				drawCount = ( Math.max( 5000, drawCount ) + Math.floor( 500 * Math.random() ) ) % particles;
 				points.geometry.setDrawRange( 0, drawCount );
 
@@ -180,6 +167,8 @@
 				points.rotation.y = time * 0.2;
 
 				renderer.render( scene, camera );
+
+				stats.update();
 
 			}
 

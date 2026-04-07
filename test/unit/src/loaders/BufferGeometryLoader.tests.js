@@ -1,5 +1,3 @@
-/* global QUnit */
-
 import { BufferGeometryLoader } from '../../../../src/loaders/BufferGeometryLoader.js';
 
 import { BufferAttribute } from '../../../../src/core/BufferAttribute.js';
@@ -30,19 +28,6 @@ export default QUnit.module( 'Loaders', () => {
 
 		} );
 
-		// PUBLIC
-		QUnit.todo( 'load', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
-
-		} );
-
-		QUnit.todo( 'parse', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
-
-		} );
-
 		// OTHERS
 		QUnit.test( 'parser - attributes - circlable', ( assert ) => {
 
@@ -51,8 +36,6 @@ export default QUnit.module( 'Loaders', () => {
 			const attr = new BufferAttribute( new Float32Array( [ 7, 8, 9, 10, 11, 12 ] ), 2, true );
 			attr.name = 'attribute';
 			attr.setUsage( DynamicDrawUsage );
-			attr.updateRange.offset = 1;
-			attr.updateRange.count = 2;
 
 			geometry.setAttribute( 'attr', attr );
 

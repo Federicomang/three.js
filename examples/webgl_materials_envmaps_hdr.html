@@ -14,10 +14,6 @@
 			Created by Prashant Sharma and <a href="http://clara.io/" target="_blank" rel="noopener">Ben Houston</a>.
 		</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -36,7 +32,6 @@
 			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 			import { HDRCubeTextureLoader } from 'three/addons/loaders/HDRCubeTextureLoader.js';
-			import { RGBMLoader } from 'three/addons/loaders/RGBMLoader.js';
 			import { DebugEnvironment } from 'three/addons/environments/DebugEnvironment.js';
 
 			const params = {
@@ -50,11 +45,10 @@
 			let container, stats;
 			let camera, scene, renderer, controls;
 			let torusMesh, planeMesh;
-			let generatedCubeRenderTarget, ldrCubeRenderTarget, hdrCubeRenderTarget, rgbmCubeRenderTarget;
-			let ldrCubeMap, hdrCubeMap, rgbmCubeMap;
+			let generatedCubeRenderTarget, ldrCubeRenderTarget, hdrCubeRenderTarget;
+			let ldrCubeMap, hdrCubeMap;
 
 			init();
-			animate();
 
 			function init() {
 
@@ -119,16 +113,6 @@
 
 					} );
 
-
-				const rgbmUrls = [ 'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png' ];
-				rgbmCubeMap = new RGBMLoader().setMaxRange( 16 )
-					.setPath( './textures/cube/pisaRGBM16/' )
-					.loadCubemap( rgbmUrls, function () {
-
-						rgbmCubeRenderTarget = pmremGenerator.fromCubemap( rgbmCubeMap );
-
-					} );
-
 				const pmremGenerator = new THREE.PMREMGenerator( renderer );
 				pmremGenerator.compileCubemapShader();
 
@@ -137,6 +121,7 @@
 
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				container.appendChild( renderer.domElement );
 
 				//renderer.toneMapping = ReinhardToneMapping;
@@ -152,11 +137,11 @@
 
 				const gui = new GUI();
 
-				gui.add( params, 'envMap', [ 'Generated', 'LDR', 'HDR', 'RGBM16' ] );
+				gui.add( params, 'envMap', [ 'Generated', 'LDR', 'HDR' ] );
 				gui.add( params, 'roughness', 0, 1, 0.01 );
 				gui.add( params, 'metalness', 0, 1, 0.01 );
 				gui.add( params, 'exposure', 0, 2, 0.01 );
-				gui.add( params, 'debug', false );
+				gui.add( params, 'debug' );
 				gui.open();
 
 			}
@@ -174,8 +159,6 @@
 			}
 
 			function animate() {
-
-				requestAnimationFrame( animate );
 
 				stats.begin();
 				render();
@@ -203,10 +186,6 @@
 					case 'HDR':
 						renderTarget = hdrCubeRenderTarget;
 						cubeMap = hdrCubeMap;
-						break;
-					case 'RGBM16':
-						renderTarget = rgbmCubeRenderTarget;
-						cubeMap = rgbmCubeMap;
 						break;
 
 				}

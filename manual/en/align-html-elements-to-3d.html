@@ -11,10 +11,6 @@
 
     <link rel="stylesheet" href="../resources/lesson.css">
     <link rel="stylesheet" href="../resources/lang.css">
-<!-- Import maps polyfill -->
-<!-- Remove this when import maps will be widely supported -->
-<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 <script type="importmap">
 {
   "imports": {
@@ -37,7 +33,7 @@ yet and you're new to three.js you might want to consider starting there. </p>
 each with pluses and minuses.</p>
 <ul>
 <li><p>Use 3D text</p>
-<p>If you look at the <a href="primitives.html">primitives article</a> you'll see <a href="/docs/#api/en/geometries/TextGeometry"><code class="notranslate" translate="no">TextGeometry</code></a> which
+<p>If you look at the <a href="primitives.html">primitives article</a> you'll see <a href="/docs/#examples/en/geometries/TextGeometry"><code class="notranslate" translate="no">TextGeometry</code></a> which
 makes 3D text. This might be useful for flying logos but probably not so useful for stats, info,
 or labelling lots of things.</p>
 </li>
@@ -408,8 +404,8 @@ loadCountryData();
 </pre>
 <p>Now let's use that data to generate and place the labels.</p>
 <p>In the article on <a href="optimize-lots-of-objects.html">optimizing lots of objects</a>
-we had setup a small scene graph of helper objects to make it easy to 
-compute latitude and longitude positions on our globe. See that article 
+we had setup a small scene graph of helper objects to make it easy to
+compute latitude and longitude positions on our globe. See that article
 for an explanation of how they work.</p>
 <pre class="prettyprint showlinemods notranslate lang-js" translate="no">const lonFudge = Math.PI * 1.5;
 const latFudge = Math.PI;
@@ -720,7 +716,7 @@ elements with your 3D. A few things I might change.</p>
         </div>
       </div>
     </div>
-  
+
   <script src="../resources/prettify.js"></script>
   <script src="../resources/lesson.js"></script>
 

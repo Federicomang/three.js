@@ -1,8 +1,7 @@
-/* global QUnit */
-
 import { Object3D } from '../../../../src/core/Object3D.js';
 import { Mesh } from '../../../../src/objects/Mesh.js';
 import { SkinnedMesh } from '../../../../src/objects/SkinnedMesh.js';
+import { AttachedBindMode } from '../../../../src/constants.js';
 
 export default QUnit.module( 'Objects', () => {
 
@@ -41,21 +40,9 @@ export default QUnit.module( 'Objects', () => {
 
 			const object = new SkinnedMesh();
 			assert.ok(
-				object.bindMode === 'attached',
-				'SkinnedMesh.bindMode should be attached'
+				object.bindMode === AttachedBindMode,
+				'SkinnedMesh.bindMode should be AttachedBindMode'
 			);
-
-		} );
-
-		QUnit.todo( 'bindMatrix', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
-
-		} );
-
-		QUnit.todo( 'bindMatrixInverse', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
 
 		} );
 
@@ -67,42 +54,6 @@ export default QUnit.module( 'Objects', () => {
 				object.isSkinnedMesh,
 				'SkinnedMesh.isSkinnedMesh should be true'
 			);
-
-		} );
-
-		QUnit.todo( 'copy', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
-
-		} );
-
-		QUnit.todo( 'bind', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
-
-		} );
-
-		QUnit.todo( 'pose', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
-
-		} );
-
-		QUnit.todo( 'normalizeSkinWeights', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
-
-		} );
-
-		QUnit.todo( 'updateMatrixWorld', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
-
-		} );
-
-		QUnit.todo( 'applyBoneTransform', ( assert ) => {
-
-			assert.ok( false, 'everything\'s gonna be alright' );
 
 		} );
 

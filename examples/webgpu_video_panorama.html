@@ -4,7 +4,7 @@
 		<title>three.js webgpu - video panorama</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="main.css">
+		<link type="text/css" rel="stylesheet" href="example.css">
 		<style>
 			body {
 				touch-action: none;
@@ -12,8 +12,15 @@
 		</style>
 	</head>
 	<body>
+
 		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - video panorama
+			<a href="https://threejs.org/" target="_blank" rel="noopener" class="logo-link"></a>
+
+			<div class="title-wrapper">
+				<a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a><span>Video Panorama</span>
+			</div>
+
+			<small>Video panorama using equirectangular projection.</small>
 		</div>
 
 		<div id="container"></div>
@@ -23,14 +30,12 @@
 			<source src="textures/pano.mp4">
 		</video>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
-					"three": "../build/three.module.js",
+					"three": "../build/three.webgpu.js",
+					"three/webgpu": "../build/three.webgpu.js",
+					"three/tsl": "../build/three.tsl.js",
 					"three/addons/": "./jsm/"
 				}
 			}
@@ -38,10 +43,7 @@
 
 		<script type="module">
 
-			import * as THREE from 'three';
-
-			import WebGPU from 'three/addons/capabilities/WebGPU.js';
-			import WebGPURenderer from 'three/addons/renderers/webgpu/WebGPURenderer.js';
+			import * as THREE from 'three/webgpu';
 
 			let camera, scene, renderer;
 
@@ -56,17 +58,8 @@
 			const distance = .5;
 
 			init();
-			animate();
 
 			function init() {
-
-				if ( WebGPU.isAvailable() === false ) {
-
-					document.body.appendChild( WebGPU.getErrorMessage() );
-
-					throw new Error( 'No WebGPU support' );
-
-				}
 
 				const container = document.getElementById( 'container' );
 
@@ -88,9 +81,10 @@
 				const mesh = new THREE.Mesh( geometry, material );
 				scene.add( mesh );
 
-				renderer = new WebGPURenderer( { antialias: true } );
+				renderer = new THREE.WebGPURenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				container.appendChild( renderer.domElement );
 
 				document.addEventListener( 'pointerdown', onPointerDown );
@@ -143,7 +137,6 @@
 
 			function animate() {
 
-				requestAnimationFrame( animate );
 				update();
 
 			}

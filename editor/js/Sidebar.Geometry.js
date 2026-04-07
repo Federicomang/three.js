@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { UIPanel, UIRow, UIText, UIInput, UIButton, UISpan } from './libs/ui.js';
+import { UIPanel, UIRow, UIText, UIInput, UIButton, UISpan, UITextArea, UINumber, UIDiv, UIBreak } from './libs/ui.js';
 
 import { SetGeometryValueCommand } from './commands/SetGeometryValueCommand.js';
 
@@ -90,7 +90,7 @@ function SidebarGeometry( editor ) {
 	const geometryTypeRow = new UIRow();
 	const geometryType = new UIText();
 
-	geometryTypeRow.add( new UIText( strings.getKey( 'sidebar/geometry/type' ) ).setWidth( '90px' ) );
+	geometryTypeRow.add( new UIText( strings.getKey( 'sidebar/geometry/type' ) ).setClass( 'Label' ) );
 	geometryTypeRow.add( geometryType );
 
 	container.add( geometryTypeRow );
@@ -107,7 +107,7 @@ function SidebarGeometry( editor ) {
 
 	} );
 
-	geometryUUIDRow.add( new UIText( strings.getKey( 'sidebar/geometry/uuid' ) ).setWidth( '90px' ) );
+	geometryUUIDRow.add( new UIText( strings.getKey( 'sidebar/geometry/uuid' ) ).setClass( 'Label' ) );
 	geometryUUIDRow.add( geometryUUID );
 	geometryUUIDRow.add( geometryUUIDRenew );
 
@@ -122,7 +122,7 @@ function SidebarGeometry( editor ) {
 
 	} );
 
-	geometryNameRow.add( new UIText( strings.getKey( 'sidebar/geometry/name' ) ).setWidth( '90px' ) );
+	geometryNameRow.add( new UIText( strings.getKey( 'sidebar/geometry/name' ) ).setClass( 'Label' ) );
 	geometryNameRow.add( geometryName );
 
 	container.add( geometryNameRow );
@@ -141,13 +141,60 @@ function SidebarGeometry( editor ) {
 	const geometryBoundingBox = new UIText().setFontSize( '12px' );
 
 	const geometryBoundingBoxRow = new UIRow();
-	geometryBoundingBoxRow.add( new UIText( strings.getKey( 'sidebar/geometry/bounds' ) ).setWidth( '90px' ) );
+	geometryBoundingBoxRow.add( new UIText( strings.getKey( 'sidebar/geometry/bounds' ) ).setClass( 'Label' ) );
 	geometryBoundingBoxRow.add( geometryBoundingBox );
 	container.add( geometryBoundingBoxRow );
 
+	// userData
+
+	const geometryUserDataRow = new UIRow();
+	const geometryUserData = new UITextArea().setValue( '{}' ).setWidth( '150px' ).setHeight( '40px' ).setFontSize( '12px' ).onChange( function () {
+
+		try {
+
+			const userData = JSON.parse( geometryUserData.getValue() );
+
+			if ( JSON.stringify( editor.selected.geometry.userData ) != JSON.stringify( userData ) ) {
+
+				editor.execute( new SetGeometryValueCommand( editor, editor.selected, 'userData', userData ) );
+
+				build();
+
+			}
+
+		} catch ( exception ) {
+
+			console.warn( exception );
+
+		}
+
+	} );
+	geometryUserData.onKeyUp( function () {
+
+		try {
+
+			JSON.parse( geometryUserData.getValue() );
+
+			geometryUserData.dom.classList.add( 'success' );
+			geometryUserData.dom.classList.remove( 'fail' );
+
+		} catch ( error ) {
+
+			geometryUserData.dom.classList.remove( 'success' );
+			geometryUserData.dom.classList.add( 'fail' );
+
+		}
+
+	} );
+
+	geometryUserDataRow.add( new UIText( strings.getKey( 'sidebar/geometry/userdata' ) ).setClass( 'Label' ) );
+	geometryUserDataRow.add( geometryUserData );
+
+	container.add( geometryUserDataRow );
+
 	// Helpers
 
-	const helpersRow = new UIRow().setPaddingLeft( '90px' );
+	const helpersRow = new UIRow().setMarginLeft( '120px' );
 	container.add( helpersRow );
 
 	const vertexNormalsButton = new UIButton( strings.getKey( 'sidebar/geometry/show_vertex_normals' ) );
@@ -170,6 +217,49 @@ function SidebarGeometry( editor ) {
 	} );
 	helpersRow.add( vertexNormalsButton );
 
+	// Export JSON
+
+	const exportJson = new UIButton( strings.getKey( 'sidebar/geometry/export' ) );
+	exportJson.setMarginLeft( '120px' );
+	exportJson.onClick( function () {
+
+		const object = editor.selected;
+		const geometry = object.geometry;
+
+		let output = geometry.toJSON();
+
+		try {
+
+			output = JSON.stringify( output, null, '\t' );
+			output = output.replace( /[\n\t]+([\d\.e\-\[\]]+)/g, '$1' );
+
+		} catch ( e ) {
+
+			output = JSON.stringify( output );
+
+		}
+
+		editor.utils.save( new Blob( [ output ] ), `${ geometryName.getValue() || 'geometry' }.json` );
+
+	} );
+	container.add( exportJson );
+
+	// Morph Targets
+
+	const morphContainer = new UIDiv();
+	morphContainer.setMarginTop( '20px' );
+	morphContainer.setDisplay( 'none' );
+	container.add( morphContainer );
+
+	morphContainer.add( new UIText( strings.getKey( 'sidebar/geometry/morph' ) ).setTextTransform( 'uppercase' ) );
+	morphContainer.add( new UIBreak() );
+	morphContainer.add( new UIBreak() );
+
+	const morphList = new UIDiv();
+	morphContainer.add( morphList );
+
+	//
+
 	async function build() {
 
 		const object = editor.selected;
@@ -191,7 +281,7 @@ function SidebarGeometry( editor ) {
 
 				parameters.clear();
 
-				if ( geometry.type === 'BufferGeometry' ) {
+				if ( geometry.type === 'BufferGeometry' || geometry.type === 'InstancedBufferGeometry' ) {
 
 					parameters.add( new SidebarGeometryModifiers( editor, object ) );
 
@@ -218,9 +308,86 @@ function SidebarGeometry( editor ) {
 
 			helpersRow.setDisplay( geometry.hasAttribute( 'normal' ) ? '' : 'none' );
 
-		} else {
+			geometryUserData.setValue( JSON.stringify( geometry.userData, null, '  ' ) );
 
-			container.setDisplay( 'none' );
+			//
+
+			const helper = editor.helpers[ object.id ];
+
+			if ( helper !== undefined && helper.isVertexNormalsHelper === true ) {
+
+				editor.removeHelper( object );
+				editor.addHelper( object, new VertexNormalsHelper( object ) );
+
+			}
+
+			//
+
+			morphUIElements.length = 0;
+			morphList.clear();
+
+			if ( object.morphTargetInfluences ) {
+
+				const morphTargetDictionary = object.morphTargetDictionary;
+				const morphTargetInfluences = object.morphTargetInfluences;
+				const morphNames = Object.keys( morphTargetDictionary );
+
+				for ( let i = 0; i < morphNames.length; i ++ ) {
+
+					const name = morphNames[ i ];
+					morphList.add( new Morph( i, name, morphTargetInfluences ) );
+
+				}
+
+				morphContainer.setDisplay( '' );
+
+			} else {
+
+				morphContainer.setDisplay( 'none' );
+
+			}
+
+		}
+
+	}
+
+	const morphUIElements = [];
+
+	function Morph( index, name, morphTargetInfluences ) {
+
+		const container = new UIRow();
+
+		const morphName = new UIText( name ).setWidth( '200px' );
+		container.add( morphName );
+
+		const morphInfluence = new UINumber().setWidth( '60px' ).setRange( 0, 1 ).onChange( function updateMorphInfluence() {
+
+			morphTargetInfluences[ index ] = morphInfluence.getValue();
+			signals.objectChanged.dispatch( editor.selected );
+
+		} );
+		morphInfluence.setValue( morphTargetInfluences[ index ] );
+
+		container.add( morphInfluence );
+		morphUIElements.push( morphInfluence );
+
+		return container;
+
+	}
+
+
+	function refreshUI() {
+
+		const object = editor.selected;
+
+		if ( object !== null && object.morphTargetInfluences ) {
+
+			for ( let i = 0; i < morphUIElements.length; i ++ ) {
+
+				const element = morphUIElements[ i ];
+				element.setValue( object.morphTargetInfluences[ i ] );
+
+			}
 
 		}
 
@@ -235,6 +402,7 @@ function SidebarGeometry( editor ) {
 	} );
 
 	signals.geometryChanged.add( build );
+	signals.morphTargetsUpdated.add( refreshUI );
 
 	return container;
 

@@ -13,10 +13,6 @@
 			by <a href="http://master-domain.com" target="_blank" rel="noopener">Master James</a>
 		</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -34,6 +30,7 @@
 			const renderer = new THREE.WebGLRenderer( { antialias: true } );
 			renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setAnimationLoop( animate );
 
 			const camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 0.1, 100 );
 
@@ -62,7 +59,7 @@
 			function init() {
 
 				renderer.shadowMap.enabled = true;
-				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+				renderer.shadowMap.type = THREE.PCFShadowMap;
 
 				camera.position.set( 4.6, 2.2, - 2.1 );
 
@@ -137,17 +134,17 @@
 
 			}
 
-			function animate() {
+			function updateTweens() {
 
 				tween( spotLight1 );
 				tween( spotLight2 );
 				tween( spotLight3 );
 
-				setTimeout( animate, 5000 );
+				setTimeout( updateTweens, 5000 );
 
 			}
 
-			function render() {
+			function animate() {
 
 				TWEEN.update();
 
@@ -157,13 +154,10 @@
 
 				renderer.render( scene, camera );
 
-				requestAnimationFrame( render );
-
 			}
 
 			init();
-			render();
-			animate();
+			updateTweens();
 
 		</script>
 	</body>

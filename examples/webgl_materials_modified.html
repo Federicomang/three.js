@@ -13,10 +13,6 @@
 			<a href="https://casual-effects.com/data/" target="_blank" rel="noopener">Lee Perry-Smith</a> head.
 		</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -38,7 +34,6 @@
 			let camera, scene, renderer, stats;
 
 			init();
-			animate();
 
 			function init() {
 
@@ -67,6 +62,7 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				document.body.appendChild( renderer.domElement );
 
 				const controls = new OrbitControls( camera, renderer.domElement );
@@ -108,7 +104,7 @@
 
 				};
 
-				// Make sure WebGLRenderer doesnt reuse a single program
+				// Make sure WebGLRenderer doesn't reuse a single program
 
 				material.customProgramCacheKey = function () {
 
@@ -137,8 +133,6 @@
 			//
 
 			function animate() {
-
-				requestAnimationFrame( animate );
 
 				render();
 

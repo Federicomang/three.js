@@ -20,10 +20,6 @@
 		<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - LDrawLoader
 		</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -44,6 +40,7 @@
 
 			import { LDrawLoader } from 'three/addons/loaders/LDrawLoader.js';
 			import { LDrawUtils } from 'three/addons/utils/LDrawUtils.js';
+			import { LDrawConditionalLineMaterial } from 'three/addons/materials/LDrawConditionalLineMaterial.js';
 
 			let container, progressBarDiv;
 
@@ -73,8 +70,6 @@
 			};
 
 			init();
-			animate();
-
 
 			function init() {
 
@@ -86,9 +81,10 @@
 
 				//
 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer = new THREE.WebGLRenderer( { antialias: true, outputBufferType: THREE.HalfFloatType } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				renderer.toneMapping = THREE.ACESFilmicToneMapping;
 				container.appendChild( renderer.domElement );
 
@@ -98,7 +94,7 @@
 
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xdeebed );
-				scene.environment = pmremGenerator.fromScene( new RoomEnvironment( renderer ) ).texture;
+				scene.environment = pmremGenerator.fromScene( new RoomEnvironment(), 0.04 ).texture;
 
 				controls = new OrbitControls( camera, renderer.domElement );
 				controls.enableDamping = true;
@@ -177,6 +173,7 @@
 
 				// only smooth when not rendering with flat colors to improve processing time
 				const lDrawLoader = new LDrawLoader();
+				lDrawLoader.setConditionalLineMaterial( LDrawConditionalLineMaterial );
 				lDrawLoader.smoothNormals = guiData.smoothNormals && ! guiData.flatColors;
 				lDrawLoader
 					.setPath( ldrawPath )
@@ -203,7 +200,7 @@
 								newMaterial.opacity = material.opacity;
 								newMaterial.transparent = material.transparent;
 								newMaterial.depthWrite = material.depthWrite;
-								newMaterial.toneMapping = false;
+								newMaterial.toneMapped = false;
 
 								return newMaterial;
 
@@ -325,7 +322,6 @@
 
 			function animate() {
 
-				requestAnimationFrame( animate );
 				controls.update();
 				render();
 
@@ -343,7 +339,7 @@
 
 					updateProgressBar( xhr.loaded / xhr.total );
 
-					console.log( Math.round( xhr.loaded / xhr.total * 100, 2 ) + '% downloaded' );
+					console.log( Math.round( xhr.loaded / xhr.total * 100 ) + '% downloaded' );
 
 				}
 
@@ -372,7 +368,7 @@
 
 			function updateProgressBar( fraction ) {
 
-				progressBarDiv.innerText = 'Loading... ' + Math.round( fraction * 100, 2 ) + '%';
+				progressBarDiv.innerText = 'Loading... ' + Math.round( fraction * 100 ) + '%';
 
 			}
 

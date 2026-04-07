@@ -3,102 +3,197 @@ import { Loader } from './Loader.js';
 import { FileLoader } from './FileLoader.js';
 import { createElementNS, parseImageMIMEType } from '../utils.js';
 
+const _loading = new WeakMap();
+
+/**
+ * A loader for loading images. The class loads images with the HTML `Image` API.
+ *
+ * ```js
+ * const loader = new THREE.ImageLoader();
+ * const image = await loader.loadAsync( 'image.png' );
+ * ```
+ * Please note that `ImageLoader` has dropped support for progress
+ * events in `r84`. For an `ImageLoader` that supports progress events, see
+ * [this thread](https://github.com/mrdoob/three.js/issues/10439#issuecomment-275785639).
+ *
+ * @augments Loader
+ */
 class ImageLoader extends Loader {
 
-	constructor( manager ) {
+	/**
+	 * Constructs a new image loader.
+	 *
+	 * @param {LoadingManager} [manager] - The loading manager.
+	 */
+	constructor(manager) {
 
-		super( manager );
+		super(manager);
 
 	}
 
-	load( url, onLoad, onProgress, onError ) {
+	/**
+	 * Starts loading from the given URL and passes the loaded image
+	 * to the `onLoad()` callback. The method also returns a new `Image` object which can
+	 * directly be used for texture creation. If you do it this way, the texture
+	 * may pop up in your scene once the respective loading process is finished.
+	 *
+	 * @param {string} url - The path/URL of the file to be loaded. This can also be a data URI.
+	 * @param {function(Image)} onLoad - Executed when the loading process has been finished.
+	 * @param {onProgressCallback} onProgress - Unsupported in this loader.
+	 * @param {onErrorCallback} onError - Executed when errors occur.
+	 * @return {Image} The image.
+	 */
+	load(url, onLoad, onProgress, onError) {
 		const originalUrl = url;
 
-		if ( this.path !== undefined ) url = this.path + url;
-		
-		url = this.manager.resolveURL( url );
-		
+		if (this.path !== undefined) url = this.path + url;
+
+		url = this.manager.resolveURL(url);
+
 		const scope = this;
 
-		function handleImage(fileUrl, fileLoader = false) {
-			const image = createElementNS( 'img' );
+		const cached = Cache.get(`image:${url}`);
 
-			function onImageLoad() {
+		if (cached !== undefined) {
 
-				removeEventListeners();
+			if (cached.complete === true) {
 
-				if(!fileLoader) {
-					Cache.add( fileUrl, this );
+				scope.manager.itemStart(url);
+
+				setTimeout(function () {
+
+					if (onLoad) onLoad(cached);
+
+					scope.manager.itemEnd(url);
+
+				}, 0);
+
+			} else {
+
+				let arr = _loading.get(cached);
+
+				if (arr === undefined) {
+
+					arr = [];
+					_loading.set(cached, arr);
+
 				}
 
-				if ( onLoad ) onLoad( this );
+				arr.push({ onLoad, onError });
 
-				if(!fileLoader) {
-					scope.manager.itemEnd( fileUrl );
-				}
 			}
 
-			function onImageError( event ) {
+			return cached;
 
-				removeEventListeners();
+		}
 
-				if ( onError ) onError( event );
+		const image = createElementNS('img');
 
-				if(!fileLoader) {
-					scope.manager.itemError( fileUrl );
-					scope.manager.itemEnd( fileUrl );
-				}
+		function onImageLoad() {
+
+			removeEventListeners();
+
+			if (!fileLoader) {
+				Cache.add(fileUrl, this);
+			}
+
+			if (onLoad) onLoad(this);
+
+			//
+
+			const callbacks = _loading.get(this) || [];
+
+			for (let i = 0; i < callbacks.length; i++) {
+
+				const callback = callbacks[i];
+				if (callback.onLoad) callback.onLoad(this);
+
+			}
+
+			_loading.delete(this);
+
+			if (!fileLoader) {
+				scope.manager.itemEnd(fileUrl);
+			}
+		}
+
+		function onImageError(event) {
+
+			removeEventListeners();
+
+			if (onError) onError(event);
+
+			Cache.remove(`image:${url}`);
+
+			//
+
+			const callbacks = _loading.get(this) || [];
+
+			for (let i = 0; i < callbacks.length; i++) {
+
+				const callback = callbacks[i];
+				if (callback.onError) callback.onError(event);
+
+			}
+
+			_loading.delete(this);
+
+
+			if (!fileLoader) {
+				scope.manager.itemError(fileUrl);
+				scope.manager.itemEnd(fileUrl);
 			}
 
 			function removeEventListeners() {
 
-				image.removeEventListener( 'load', onImageLoad, false );
-				image.removeEventListener( 'error', onImageError, false );
+				image.removeEventListener('load', onImageLoad, false);
+				image.removeEventListener('error', onImageError, false);
 
 			}
 
-			image.addEventListener( 'load', onImageLoad, false );
-			image.addEventListener( 'error', onImageError, false );
+			image.addEventListener('load', onImageLoad, false);
+			image.addEventListener('error', onImageError, false);
 
-			if (fileUrl.slice( 0, 5 ) !== 'data:' ) {
-				if ( scope.crossOrigin !== undefined ) image.crossOrigin = scope.crossOrigin;
+			if (fileUrl.slice(0, 5) !== 'data:') {
+				if (scope.crossOrigin !== undefined) image.crossOrigin = scope.crossOrigin;
 			}
 
-			if(!fileLoader) scope.manager.itemStart( fileUrl );
+			if (!fileLoader) scope.manager.itemStart(fileUrl);
 
 			image.src = fileUrl;
 
 			return image;
 		}
 
-		if(this.withCredentials) {
-			const loader = new FileLoader( this.manager );
-			loader.setCrossOrigin( this.crossOrigin );
-			loader.setResponseType( 'arraybuffer' );
-			loader.setPath( this.path );
-			loader.setWithCredentials( this.withCredentials );
-			loader.setRequestHeader( this.requestHeader );
-			
+		if (this.withCredentials) {
+			const loader = new FileLoader(this.manager);
+			loader.setCrossOrigin(this.crossOrigin);
+			loader.setResponseType('arraybuffer');
+			loader.setPath(this.path);
+			loader.setWithCredentials(this.withCredentials);
+			loader.setRequestHeader(this.requestHeader);
+
 			const fileExtension = url.split('.').pop().toLowerCase();
-			loader.load(originalUrl, ( buffer ) => {
-				var blob = new Blob([buffer], { type: parseImageMIMEType(fileExtension)});
+			loader.load(originalUrl, (buffer) => {
+				var blob = new Blob([buffer], { type: parseImageMIMEType(fileExtension) });
 				var blobUrl = URL.createObjectURL(blob);
 				handleImage(blobUrl, true);
-			}, onProgress, onError );
+			}, onProgress, onError);
 		} else {
-			const cached = Cache.get( url );
+			const cached = Cache.get(url);
 
-			if ( cached !== undefined ) {
+			if (cached !== undefined) {
 
-				scope.manager.itemStart( url );
+				Cache.add(`image:${url}`, image);
+				scope.manager.itemStart(url);
 
-				setTimeout( function () {
+				setTimeout(function () {
 
-					if ( onLoad ) onLoad( cached );
+					if (onLoad) onLoad(cached);
 
-					scope.manager.itemEnd( url );
+					scope.manager.itemEnd(url);
 
-				}, 0 );
+				}, 0);
 
 				return cached;
 			}
@@ -106,8 +201,6 @@ class ImageLoader extends Loader {
 			handleImage(url);
 		}
 	}
-
 }
-
 
 export { ImageLoader };

@@ -16,10 +16,6 @@
 
 		<div id="info">Simple procedurally-generated shapes</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -50,7 +46,6 @@
 			let windowHalfX = window.innerWidth / 2;
 
 			init();
-			animate();
 
 			function init() {
 
@@ -361,6 +356,7 @@
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				container.appendChild( renderer.domElement );
 
 				stats = new Stats();
@@ -410,7 +406,7 @@
 
 			}
 
-			function onPointerUp() {
+			function onPointerUp( event ) {
 
 				if ( event.isPrimary === false ) return;
 
@@ -422,8 +418,6 @@
 			//
 
 			function animate() {
-
-				requestAnimationFrame( animate );
 
 				render();
 				stats.update();

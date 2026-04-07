@@ -13,10 +13,6 @@
 			Character and animation from <a href="https://www.mixamo.com/" target="_blank" rel="noopener">Mixamo</a>
 		</div>
 
-		<!-- Import maps polyfill -->
-		<!-- Remove this when import maps will be widely supported -->
-		<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 		<script type="importmap">
 			{
 				"imports": {
@@ -34,15 +30,42 @@
 
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 			import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
-			let camera, scene, renderer, stats;
+			const manager = new THREE.LoadingManager();
 
-			const clock = new THREE.Clock();
-
+			let camera, scene, renderer, stats, object, loader, guiMorphsFolder;
 			let mixer;
 
+			const timer = new THREE.Timer();
+			timer.connect( document );
+
+			const params = {
+				asset: 'Samba Dancing'
+			};
+
+			const assets = [
+				'Samba Dancing',
+				'morph_test',
+				'monkey',
+				'monkey_embedded_texture',
+				'vCube',
+				'archer/ArcherRi01',
+				'warrior/Warrior',
+				'stanford-bunny',
+				'mixamo',
+				'RotationTest',
+				'exampleWindow',
+				'Head_69',
+			];
+
+			const scales = new Map();
+			scales.set( 'warrior/Warrior', 100 );
+			scales.set( 'archer/ArcherRi01', 100 );
+			scales.set( 'stanford-bunny', 0.001 );
+			scales.set( 'Head_69', 100 );
+
 			init();
-			animate();
 
 			function init() {
 
@@ -81,34 +104,14 @@
 				grid.material.opacity = 0.2;
 				grid.material.transparent = true;
 				scene.add( grid );
-
-				// model
-				const loader = new FBXLoader();
-				loader.load( 'models/fbx/Samba Dancing.fbx', function ( object ) {
-
-					mixer = new THREE.AnimationMixer( object );
-
-					const action = mixer.clipAction( object.animations[ 0 ] );
-					action.play();
-
-					object.traverse( function ( child ) {
-
-						if ( child.isMesh ) {
-
-							child.castShadow = true;
-							child.receiveShadow = true;
-
-						}
-
-					} );
-
-					scene.add( object );
-
-				} );
+			
+				loader = new FBXLoader( manager );
+				loadAsset( params.asset );
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
 				renderer.shadowMap.enabled = true;
 				container.appendChild( renderer.domElement );
 
@@ -121,6 +124,101 @@
 				// stats
 				stats = new Stats();
 				container.appendChild( stats.dom );
+
+				const gui = new GUI();
+				gui.add( params, 'asset', assets ).onChange( function ( value ) {
+
+					loadAsset( value );
+
+				} );
+
+				guiMorphsFolder = gui.addFolder( 'Morphs' ).hide();
+
+			}
+
+			function loadAsset( asset ) {
+
+				loader.load( 'models/fbx/' + asset + '.fbx', function ( group ) {
+
+					if ( object ) {
+
+						object.traverse( function ( child ) {
+
+							if ( child.isSkinnedMesh ) {
+
+								child.skeleton.dispose();
+
+							}
+
+							if ( child.material ) {
+
+								const materials = Array.isArray( child.material ) ? child.material : [ child.material ];
+								materials.forEach( material => {
+
+									if ( material.map ) material.map.dispose();
+									material.dispose();
+			
+								} );
+			
+							}
+			
+							if ( child.geometry ) child.geometry.dispose();
+
+						} );
+
+						scene.remove( object );
+
+					}
+
+					//
+
+					object = group;
+
+					const scale = scales.get( asset );
+					object.scale.setScalar( scale || 1 );
+
+					if ( object.animations && object.animations.length ) {
+
+						mixer = new THREE.AnimationMixer( object );
+
+						const action = mixer.clipAction( object.animations[ 0 ] );
+						action.play();
+
+					} else {
+
+						mixer = null;
+
+					}
+
+					guiMorphsFolder.children.forEach( ( child ) => child.destroy() );
+					guiMorphsFolder.hide();
+
+					object.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+							if ( child.morphTargetDictionary ) {
+
+								guiMorphsFolder.show();
+								const meshFolder = guiMorphsFolder.addFolder( child.name || child.uuid );
+								Object.keys( child.morphTargetDictionary ).forEach( ( key ) => {
+			
+									meshFolder.add( child.morphTargetInfluences, child.morphTargetDictionary[ key ], 0, 1, 0.01 );
+			
+								} );
+			
+							}
+
+						}
+
+					} );
+
+					scene.add( object );
+
+				} );
 
 			}
 
@@ -137,9 +235,9 @@
 
 			function animate() {
 
-				requestAnimationFrame( animate );
+				timer.update();
 
-				const delta = clock.getDelta();
+				const delta = timer.getDelta();
 
 				if ( mixer ) mixer.update( delta );
 

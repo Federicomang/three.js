@@ -11,10 +11,6 @@
 
     <link rel="stylesheet" href="../resources/lesson.css">
     <link rel="stylesheet" href="../resources/lang.css">
-<!-- Import maps polyfill -->
-<!-- Remove this when import maps will be widely supported -->
-<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-
 <script type="importmap">
 {
   "imports": {
@@ -771,6 +767,7 @@ Workerは <code class="notranslate" translate="no">ElementProxyReceiver</code> �
   'pointerType',
   'clientX',
   'clientY',
+  'pointerId',
   'pageX',
   'pageY',
 ]);
@@ -809,6 +806,10 @@ function makeSendPropertiesHandler(properties) {
 }
 
 function touchEventHandler(event, sendFn) {
+  // preventDefault() fixes mousemove, mouseup and mousedown 
+  // firing when doing a simple touchup touchdown
+  // Happens only at offscreen canvas
+  event.preventDefault(); 
   const touches = [];
   const data = {type: event.type, touches};
   for (let i = 0; i &lt; event.touches.length; ++i) {
@@ -816,6 +817,8 @@ function touchEventHandler(event, sendFn) {
     touches.push({
       pageX: touch.pageX,
       pageY: touch.pageY,
+      clientX: touch.clientX,
+      clientY: touch.clientY,
     });
   }
   sendFn(data);
@@ -1027,7 +1030,7 @@ three.js、OffscreenCanvas、Web Workerを使った動作の便利な例を紹�
         </div>
       </div>
     </div>
-  
+
   <script src="../resources/prettify.js"></script>
   <script src="../resources/lesson.js"></script>
 

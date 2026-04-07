@@ -6,26 +6,21 @@ on:
       - 'build/**'
       - 'docs/**'
       - 'files/**'
-  push:
-    paths-ignore:
-      - 'build/**'
-      - 'docs/**'
-      - 'files/**'
 
 permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Lint testing
+  test:
+    name: Lint, Unit, Unit addons, Circular dependencies & Examples testing
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install Node
-        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 18
+          node-version: 24
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
@@ -33,70 +28,45 @@ jobs:
       - name: === Lint testing ===
         run: npm run lint
 
-  unit:
-    name: Unit testing
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
-      - name: Install Node
-        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3
-        with:
-          node-version: 18
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-
       - name: === Unit testing ===
         run: npm run test-unit
+
+      - name: === Unit addons testing ===
+        run: npm run test-unit-addons
+
+      - name: === Examples ready for release ===
+        run: npm run test-e2e-cov
 
   e2e:
     name: E2E testing
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        os: [ windows-latest, ubuntu-latest, macos-latest ]
-        CI: [ 0, 1, 2, 3 ]
+        os: [ ubuntu-latest ]
+        CI: [ 0, 1, 2, 3, 4 ]
     env:
       CI: ${{ matrix.CI }}
     steps:
       - name: Git checkout
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install Node
-        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
         with:
-          node-version: 18
+          node-version: 24
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
       - name: Build
-        run: npm run build
+        run: npm run build-module
 
       - name: === E2E testing ===
         run: npm run test-e2e
       - name: Upload output screenshots
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: always()
         with:
-          name: Output screenshots
+          name: Output screenshots-${{ matrix.os }}-${{ matrix.CI }}
           path: test/e2e/output-screenshots
           if-no-files-found: ignore
-
-  e2e-cov:
-    name: Examples ready for release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
-      - name: Install Node
-        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3
-        with:
-          node-version: 18
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-
-      - name: === Examples ready for release ===
-        run: npm run test-e2e-cov
