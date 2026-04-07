@@ -46,40 +46,40 @@ class ImageLoader extends Loader {
 	load(url, onLoad, onProgress, onError) {
 		const originalUrl = url;
 
-		if (this.path !== undefined) url = this.path + url;
+		if ( this.path !== undefined ) url = this.path + url;
 
-		url = this.manager.resolveURL(url);
+		url = this.manager.resolveURL( url );
 
 		const scope = this;
 
-		const cached = Cache.get(`image:${url}`);
+		const cached = Cache.get( `image:${url}` );
 
-		if (cached !== undefined) {
+		if ( cached !== undefined ) {
 
-			if (cached.complete === true) {
+			if ( cached.complete === true ) {
 
-				scope.manager.itemStart(url);
+				scope.manager.itemStart( url );
 
-				setTimeout(function () {
+				setTimeout( function () {
 
-					if (onLoad) onLoad(cached);
+					if ( onLoad ) onLoad( cached );
 
-					scope.manager.itemEnd(url);
+					scope.manager.itemEnd( url );
 
-				}, 0);
+				}, 0 );
 
 			} else {
 
-				let arr = _loading.get(cached);
+				let arr = _loading.get( cached );
 
-				if (arr === undefined) {
+				if ( arr === undefined ) {
 
 					arr = [];
-					_loading.set(cached, arr);
+					_loading.set( cached, arr );
 
 				}
 
-				arr.push({ onLoad, onError });
+				arr.push( { onLoad, onError } );
 
 			}
 
@@ -87,83 +87,76 @@ class ImageLoader extends Loader {
 
 		}
 
-		const image = createElementNS('img');
+		const image = createElementNS( 'img' );
 
 		function onImageLoad() {
 
 			removeEventListeners();
 
-			if (!fileLoader) {
-				Cache.add(fileUrl, this);
-			}
-
-			if (onLoad) onLoad(this);
+			if ( onLoad ) onLoad( this );
 
 			//
 
-			const callbacks = _loading.get(this) || [];
+			const callbacks = _loading.get( this ) || [];
 
-			for (let i = 0; i < callbacks.length; i++) {
+			for ( let i = 0; i < callbacks.length; i ++ ) {
 
-				const callback = callbacks[i];
-				if (callback.onLoad) callback.onLoad(this);
+				const callback = callbacks[ i ];
+				if ( callback.onLoad ) callback.onLoad( this );
 
 			}
 
-			_loading.delete(this);
+			_loading.delete( this );
 
-			if (!fileLoader) {
-				scope.manager.itemEnd(fileUrl);
-			}
+			scope.manager.itemEnd( url );
+
 		}
 
-		function onImageError(event) {
+		function onImageError( event ) {
 
 			removeEventListeners();
 
-			if (onError) onError(event);
+			if ( onError ) onError( event );
 
-			Cache.remove(`image:${url}`);
+			Cache.remove( `image:${url}` );
 
 			//
 
-			const callbacks = _loading.get(this) || [];
+			const callbacks = _loading.get( this ) || [];
 
-			for (let i = 0; i < callbacks.length; i++) {
+			for ( let i = 0; i < callbacks.length; i ++ ) {
 
-				const callback = callbacks[i];
-				if (callback.onError) callback.onError(event);
-
-			}
-
-			_loading.delete(this);
-
-
-			if (!fileLoader) {
-				scope.manager.itemError(fileUrl);
-				scope.manager.itemEnd(fileUrl);
-			}
-
-			function removeEventListeners() {
-
-				image.removeEventListener('load', onImageLoad, false);
-				image.removeEventListener('error', onImageError, false);
+				const callback = callbacks[ i ];
+				if ( callback.onError ) callback.onError( event );
 
 			}
 
-			image.addEventListener('load', onImageLoad, false);
-			image.addEventListener('error', onImageError, false);
+			_loading.delete( this );
 
-			if (fileUrl.slice(0, 5) !== 'data:') {
-				if (scope.crossOrigin !== undefined) image.crossOrigin = scope.crossOrigin;
-			}
 
-			if (!fileLoader) scope.manager.itemStart(fileUrl);
+			scope.manager.itemError( url );
+			scope.manager.itemEnd( url );
 
-			image.src = fileUrl;
-
-			return image;
 		}
+
+		function removeEventListeners() {
+
+			image.removeEventListener( 'load', onImageLoad, false );
+			image.removeEventListener( 'error', onImageError, false );
+
+		}
+
+		image.addEventListener( 'load', onImageLoad, false );
+		image.addEventListener( 'error', onImageError, false );
+
+		if ( url.slice( 0, 5 ) !== 'data:' ) {
+
+			if ( this.crossOrigin !== undefined ) image.crossOrigin = this.crossOrigin;
+
+		}
+
+		Cache.add( `image:${url}`, image );
+		scope.manager.itemStart( url );
 
 		if (this.withCredentials) {
 			const loader = new FileLoader(this.manager);
@@ -177,29 +170,13 @@ class ImageLoader extends Loader {
 			loader.load(originalUrl, (buffer) => {
 				var blob = new Blob([buffer], { type: parseImageMIMEType(fileExtension) });
 				var blobUrl = URL.createObjectURL(blob);
-				handleImage(blobUrl, true);
+				image.src = blobUrl;
 			}, onProgress, onError);
 		} else {
-			const cached = Cache.get(url);
-
-			if (cached !== undefined) {
-
-				Cache.add(`image:${url}`, image);
-				scope.manager.itemStart(url);
-
-				setTimeout(function () {
-
-					if (onLoad) onLoad(cached);
-
-					scope.manager.itemEnd(url);
-
-				}, 0);
-
-				return cached;
-			}
-
-			handleImage(url);
+			image.src = url;
 		}
+
+		return image;
 	}
 }
 
