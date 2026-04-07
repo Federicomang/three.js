@@ -40,6 +40,14 @@ class Loader {
 		this.withCredentials = false;
 
 		/**
+		 * Whether the XMLHttpRequest uses credentials for resources.
+		 *
+		 * @type {boolean}
+		 * @default false
+		 */
+		this.useCredentialsForResources = false;
+
+		/**
 		 * The base path from which the asset will be loaded.
 		 *
 		 * @type {string}
